@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import BottomNav from "@/components/layout/BottomNav";
 
 const AdminSidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
   const { profile } = useAuth();
@@ -114,9 +115,11 @@ const Admin = () => {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20">
           <Outlet />
         </main>
+        
+        <BottomNav />
       </div>
     </div>
   );
