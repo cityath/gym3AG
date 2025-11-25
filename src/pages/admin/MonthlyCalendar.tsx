@@ -1,0 +1,241 @@
+import { useEffect, useState, useCallback } from "react";
+import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
+import { format, parse, startOfWeek, getDay } from 'date-fns';
+import es from 'date-fns/locale/es';
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import ScheduleForm from "@/components/admin/ScheduleForm";
+
+const locales = {
+  'es': es,
+};
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }), // Lunes
+  getDay,
+  locales,
+});
+
+interface Class {
+  id: string;
+  name: string;
+  duration: number;
+}
+
+interface ScheduleEvent {
+  id: string;
+  title: string;
+  start: Date;
+  end: Date;
+  resource: {
+    class_id: string;
+    type: string;
+    background_color?: string;
+  };
+}
+
+const MonthlyCalendar = () => {
+  const [events, setEvents] = useState<ScheduleEvent[]>([]);
+  const [classes, setClasses] = useState<Class[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<ScheduleEvent | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<{ start: Date, end: Date } | null>(null);
+  const [timeRange, setTimeRange] = useState<{ min: Date, max: Date } | null>(null);
+
+  const fetchSchedulesAndClasses = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [
+        { data: classesData, error: classesError },
+        { data: schedulesData, error: schedulesError },
+        { data: hoursData, error: hoursError }
+      ] = await Promise.all([
+        supabase.from("classes").select("id, name, duration"),
+        supabase.from("schedules").select(`id, start_time, end_time, classes (id, name, type, background_color)`),
+        supabase.from("business_hours").select("morning_open_time, morning_close_time, afternoon_open_time, afternoon_close_time")
+      ]);
+
+      if (classesError) throw classesError;
+      if (schedulesError) throw schedulesError;
+      if (hoursError) throw hoursError;
+
+      if (hoursData && hoursData.length > 0) {
+        const allTimes = hoursData.flatMap(h => [
+            h.morning_open_time, 
+            h.morning_close_time, 
+            h.afternoon_open_time, 
+            h.afternoon_close_time
+        ]).filter(Boolean);
+
+        if (allTimes.length > 0) {
+            const minTimeStr = allTimes.reduce((min, current) => current < min ? current : min);
+            const maxTimeStr = allTimes.reduce((max, current) => current > max ? current : max);
+
+            const [minHour, minMinute] = minTimeStr.split(':').map(Number);
+            const minDate = new Date();
+            minDate.setHours(minHour, minMinute, 0, 0);
+
+            const [maxHour, maxMinute] = maxTimeStr.split(':').map(Number);
+            const maxDate = new Date();
+            maxDate.setHours(maxHour, maxMinute, 0, 0);
+
+            setTimeRange({ min: minDate, max: maxDate });
+        } else {
+          setTimeRange(null);
+        }
+      }
+
+      setClasses(classesData || []);
+
+      const formattedEvents = schedulesData?.map((schedule: any) => ({
+        id: schedule.id,
+        title: schedule.classes.name,
+        start: new Date(schedule.start_time),
+        end: new Date(schedule.end_time),
+        resource: { 
+          class_id: schedule.classes.id, 
+          type: schedule.classes.type,
+          background_color: schedule.classes.background_color,
+        },
+      })) || [];
+      setEvents(formattedEvents);
+
+    } catch (error: any) {
+      toast({ title: "Error", description: "No se pudo cargar la programación.", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    fetchSchedulesAndClasses();
+  }, [fetchSchedulesAndClasses]);
+
+  const handleSelectSlot = useCallback(({ start, end }: { start: Date, end: Date }) => {
+    setSelectedEvent(null);
+    setSelectedSlot({ start, end });
+    setIsDialogOpen(true);
+  }, []);
+
+  const handleSelectEvent = useCallback((event: ScheduleEvent) => {
+    setSelectedSlot(null);
+    setSelectedEvent(event);
+    setIsDialogOpen(true);
+  }, []);
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    setSelectedEvent(null);
+    setSelectedSlot(null);
+  };
+
+  const handleSave = async (values: { class_id: string; start_time: string; end_time: string; }, id?: string) => {
+    const { class_id, start_time, end_time } = values;
+    
+    const scheduleData = {
+      class_id,
+      start_time,
+      end_time,
+    };
+
+    let error;
+    if (id) { // Update
+      const { error: updateError } = await supabase.from("schedules").update(scheduleData).eq("id", id);
+      error = updateError;
+    } else { // Create
+      const { error: insertError } = await supabase.from("schedules").insert([scheduleData]);
+      error = insertError;
+    }
+
+    if (error) {
+      toast({ title: "Error", description: "No se pudo guardar la clase programada.", variant: "destructive" });
+    } else {
+      toast({ title: "Éxito", description: "Programación guardada correctamente." });
+      fetchSchedulesAndClasses();
+    }
+    handleCloseDialog();
+  };
+
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from("schedules").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Error", description: "No se pudo eliminar la clase programada.", variant: "destructive" });
+    } else {
+      toast({ title: "Éxito", description: "Clase programada eliminada." });
+      fetchSchedulesAndClasses();
+    }
+    handleCloseDialog();
+  };
+
+  const eventStyleGetter = useCallback((event: ScheduleEvent) => {
+    const backgroundColor = event.resource.background_color || '#f3f4f6'; // default gray-100
+    const style = {
+      backgroundColor,
+      color: '#1f2937', // text-gray-800
+      borderRadius: '6px',
+      border: 'none',
+      padding: '2px 4px',
+      fontSize: '0.75rem',
+    };
+    return {
+      style,
+    };
+  }, []);
+
+  return (
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Calendario Mensual</CardTitle>
+          <CardDescription>
+            Haz clic en un día para añadir una clase o en una clase existente para editarla.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loading ? <p>Cargando calendario...</p> : (
+            <div style={{ height: '70vh' }}>
+              <Calendar
+                localizer={localizer}
+                events={events}
+                startAccessor="start"
+                endAccessor="end"
+                defaultView={Views.MONTH}
+                views={[Views.MONTH]}
+                selectable
+                onSelectSlot={handleSelectSlot}
+                onSelectEvent={handleSelectEvent}
+                eventPropGetter={eventStyleGetter}
+                culture="es"
+                min={timeRange?.min}
+                max={timeRange?.max}
+                messages={{
+                  next: "Siguiente",
+                  previous: "Anterior",
+                  today: "Hoy",
+                  month: "Mes",
+                  noEventsInRange: "No hay eventos en este rango.",
+                  showMore: total => `+ Ver más (${total})`
+                }}
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      <ScheduleForm
+        isOpen={isDialogOpen}
+        onClose={handleCloseDialog}
+        onSave={handleSave}
+        onDelete={handleDelete}
+        event={selectedEvent}
+        slot={selectedSlot}
+        classes={classes}
+      />
+    </>
+  );
+};
+
+export default MonthlyCalendar;

@@ -1,0 +1,101 @@
+"use client";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { AvatarUpload } from "./AvatarUpload";
+
+const profileSchema = z.object({
+  first_name: z.string().min(2, { message: "El nombre debe tener al menos 2 caracteres." }),
+  last_name: z.string().min(2, { message: "El apellido debe tener al menos 2 caracteres." }),
+  phone: z.string().optional(),
+  avatar_url: z.string().url({ message: "Por favor, introduce una URL válida." }).optional().or(z.literal('')),
+});
+
+const ProfileForm = () => {
+  const { user, profile, refreshProfile } = useAuth();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+
+  const form = useForm<z.infer<typeof profileSchema>>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      first_name: profile?.first_name || "",
+      last_name: profile?.last_name || "",
+      phone: profile?.phone || "",
+      avatar_url: profile?.avatar_url || "",
+    },
+  });
+
+  const onSubmit = async (values: z.infer<typeof profileSchema>) => {
+    if (!user) return;
+    setLoading(true);
+
+    const { error } = await supabase
+      .from("profiles")
+      .update(values)
+      .eq("id", user.id);
+
+    if (error) {
+      toast({ title: "Error", description: "No se pudo actualizar tu perfil.", variant: "destructive" });
+    } else {
+      toast({ title: "Éxito", description: "Tu perfil ha sido actualizado." });
+      await refreshProfile();
+    }
+    setLoading(false);
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Mi Perfil</CardTitle>
+        <CardDescription>Actualiza tu información personal.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="avatar_url"
+              render={({ field }) => (
+                <FormItem className="flex justify-center">
+                  <FormControl>
+                    <AvatarUpload
+                      url={field.value}
+                      onUpload={(url) => field.onChange(url)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField control={form.control} name="first_name" render={({ field }) => (
+                <FormItem><FormLabel>Nombre</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="last_name" render={({ field }) => (
+                <FormItem><FormLabel>Apellido</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+              )} />
+            </div>
+            <FormField control={form.control} name="phone" render={({ field }) => (
+              <FormItem><FormLabel>Teléfono</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+            )} />
+            <div className="flex justify-end">
+              <Button type="submit" disabled={loading}>{loading ? "Guardando..." : "Guardar Cambios"}</Button>
+            </div>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default ProfileForm;
