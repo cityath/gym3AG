@@ -28,6 +28,7 @@ const MyBookings = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [groupedBookings, setGroupedBookings] = useState<Record<string, Booking[]>>({});
   const [loading, setLoading] = useState(true);
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
   const [cancelLoading, setCancelLoading] = useState(false);
@@ -52,7 +53,7 @@ const MyBookings = () => {
           )
         `)
         .eq("user_id", user.id)
-        .order("booking_date", { ascending: true });
+        .order("start_time", { referencedTable: 'schedules', ascending: true });
 
       if (error) throw error;
       setBookings(data as Booking[] || []);
@@ -66,6 +67,18 @@ const MyBookings = () => {
   useEffect(() => {
     fetchBookings();
   }, [user]);
+
+  useEffect(() => {
+    const grouped = bookings.reduce((acc, booking) => {
+      const dateKey = format(new Date(booking.schedules.start_time), 'yyyy-MM-dd');
+      if (!acc[dateKey]) {
+        acc[dateKey] = [];
+      }
+      acc[dateKey].push(booking);
+      return acc;
+    }, {} as Record<string, Booking[]>);
+    setGroupedBookings(grouped);
+  }, [bookings]);
 
   const handleCancelBooking = async () => {
     if (!bookingToCancel) return;
@@ -96,31 +109,40 @@ const MyBookings = () => {
         <CardContent>
           {loading ? (
             <p>Loading your bookings...</p>
-          ) : bookings.length === 0 ? (
+          ) : Object.keys(groupedBookings).length === 0 ? (
             <p className="text-gray-500">You have no classes booked.</p>
           ) : (
-            <div className="space-y-4">
-              {bookings.map((booking) => {
-                const bgColor = booking.schedules.classes.background_color;
-                const textColor = getContrastingTextColor(bgColor);
-                return (
-                  <div 
-                    key={booking.id} 
-                    className="p-4 border rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
-                    style={{ backgroundColor: bgColor || 'transparent' }}
-                  >
-                    <div className="space-y-2">
-                      <h3 className="font-semibold text-lg" style={{ color: textColor }}>{booking.schedules.classes.name}</h3>
-                      <div className="flex items-center text-sm" style={{ color: textColor }}><User className="mr-2 h-4 w-4" />{booking.schedules.classes.instructor}</div>
-                      <div className="flex items-center text-sm" style={{ color: textColor }}><Calendar className="mr-2 h-4 w-4" />{format(new Date(booking.schedules.start_time), 'PPP', { locale: enGB })}</div>
-                      <div className="flex items-center text-sm" style={{ color: textColor }}><Clock className="mr-2 h-4 w-4" />{format(new Date(booking.schedules.start_time), 'p', { locale: enGB })}</div>
-                    </div>
-                    <Button variant="outline" onClick={() => setBookingToCancel(booking)}>
-                      Cancel Booking
-                    </Button>
+            <div className="space-y-8">
+              {Object.keys(groupedBookings).sort().map(dateKey => (
+                <div key={dateKey}>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-4 capitalize border-b pb-2">
+                    {format(new Date(dateKey + 'T00:00:00'), "EEEE, d MMMM", { locale: enGB })}
+                  </h3>
+                  <div className="space-y-4">
+                    {groupedBookings[dateKey].map((booking) => {
+                      const bgColor = booking.schedules.classes.background_color;
+                      const textColor = getContrastingTextColor(bgColor);
+                      return (
+                        <div 
+                          key={booking.id} 
+                          className="p-4 border rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+                          style={{ backgroundColor: bgColor || 'transparent' }}
+                        >
+                          <div className="space-y-2">
+                            <h3 className="font-semibold text-lg" style={{ color: textColor }}>{booking.schedules.classes.name}</h3>
+                            <div className="flex items-center text-sm" style={{ color: textColor }}><User className="mr-2 h-4 w-4" />{booking.schedules.classes.instructor}</div>
+                            <div className="flex items-center text-sm" style={{ color: textColor }}><Calendar className="mr-2 h-4 w-4" />{format(new Date(booking.schedules.start_time), 'PPP', { locale: enGB })}</div>
+                            <div className="flex items-center text-sm" style={{ color: textColor }}><Clock className="mr-2 h-4 w-4" />{format(new Date(booking.schedules.start_time), 'p', { locale: enGB })}</div>
+                          </div>
+                          <Button variant="outline" onClick={() => setBookingToCancel(booking)}>
+                            Cancel Booking
+                          </Button>
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           )}
         </CardContent>
