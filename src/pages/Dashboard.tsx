@@ -224,7 +224,7 @@ const Dashboard = () => {
                   const availableSpots = cls.capacity - cls.booked_spots;
                   return (
                     <Card key={cls.id} className="flex flex-col" style={{ backgroundColor: cls.background_color || 'white' }}>
-                      <CardHeader>
+                      <CardHeader className="p-4">
                         <CardTitle className="flex justify-between items-start">
                           <div className="flex items-center gap-3">
                             {cls.icon && <DynamicIcon name={cls.icon} className="h-6 w-6 text-gray-700" />}
@@ -234,11 +234,11 @@ const Dashboard = () => {
                         </CardTitle>
                         <CardDescription>{cls.instructor}</CardDescription>
                       </CardHeader>
-                      <CardContent className="flex-grow space-y-3">
+                      <CardContent className="flex-grow space-y-2 p-4 pt-0">
                         <div className="flex items-center text-sm text-gray-600"><Clock className="mr-2 h-4 w-4" />{format(new Date(cls.start_time), 'p', { locale: enGB })} ({cls.duration} min)</div>
                         <div className="flex items-center text-sm text-gray-600"><Users className="mr-2 h-4 w-4" />Available: {availableSpots} of {cls.capacity}</div>
                       </CardContent>
-                      <div className="px-6 pb-6">
+                      <div className="px-4 pb-4">
                         <Button 
                           className="w-full" 
                           disabled={isFull || cls.isBookedByUser} 
