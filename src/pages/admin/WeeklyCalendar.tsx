@@ -205,22 +205,37 @@ const WeeklyCalendar = () => {
     const dayOfWeek = dayMapping[date.getDay()];
     const dayHours = businessHours.find(h => h.day_of_week === dayOfWeek);
 
-    // If the day is not configured at all, it's considered closed for the whole day.
+    const getTimeOnDate = (baseDate: Date, timeString: string | null): Date | null => {
+      if (!timeString) return null;
+      const [hours, minutes] = timeString.split(':').map(Number);
+      const newDate = new Date(baseDate);
+      newDate.setHours(hours, minutes, 0, 0);
+      return newDate;
+    };
+
     if (!dayHours) {
       return { className: 'rbc-non-work-slot' };
     }
 
-    // A day is considered "open" if it has at least one valid shift defined.
-    const isDayOpenAtAll = 
-      (dayHours.morning_open_time && dayHours.morning_close_time) ||
-      (dayHours.afternoon_open_time && dayHours.afternoon_close_time);
+    const morningOpen = getTimeOnDate(date, dayHours.morning_open_time);
+    const morningClose = getTimeOnDate(date, dayHours.morning_close_time);
+    const afternoonOpen = getTimeOnDate(date, dayHours.afternoon_open_time);
+    const afternoonClose = getTimeOnDate(date, dayHours.afternoon_close_time);
 
-    // If the day is not open at all (no shifts defined), shade every slot in it.
-    if (!isDayOpenAtAll) {
+    let isWithinWorkHours = false;
+
+    if (morningOpen && morningClose && date >= morningOpen && date < morningClose) {
+      isWithinWorkHours = true;
+    }
+
+    if (afternoonOpen && afternoonClose && date >= afternoonOpen && date < afternoonClose) {
+      isWithinWorkHours = true;
+    }
+
+    if (!isWithinWorkHours) {
       return { className: 'rbc-non-work-slot' };
     }
 
-    // If the day is open at some point, don't shade any part of it.
     return {};
   }, [businessHours]);
 
