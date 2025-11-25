@@ -213,6 +213,7 @@ const WeeklyCalendar = () => {
       return newDate;
     };
 
+    // If there's no rule for this day (e.g., Sunday), it's a non-work day.
     if (!dayHours) {
       return { className: 'rbc-non-work-slot' };
     }
@@ -222,21 +223,18 @@ const WeeklyCalendar = () => {
     const afternoonOpen = getTimeOnDate(date, dayHours.afternoon_open_time);
     const afternoonClose = getTimeOnDate(date, dayHours.afternoon_close_time);
 
-    let isWithinWorkHours = false;
-
+    // Check if the current slot is within the morning shift.
     if (morningOpen && morningClose && date >= morningOpen && date < morningClose) {
-      isWithinWorkHours = true;
+      return {}; // It's a work hour, so no special class.
     }
 
+    // Check if the current slot is within the afternoon shift.
     if (afternoonOpen && afternoonClose && date >= afternoonOpen && date < afternoonClose) {
-      isWithinWorkHours = true;
+      return {}; // It's a work hour, so no special class.
     }
 
-    if (!isWithinWorkHours) {
-      return { className: 'rbc-non-work-slot' };
-    }
-
-    return {};
+    // If it's not in the morning or afternoon shift, it's a non-work hour.
+    return { className: 'rbc-non-work-slot' };
   }, [businessHours]);
 
   return (
