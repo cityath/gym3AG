@@ -46,6 +46,7 @@ const MyBookings = () => {
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
   const [cancelLoading, setCancelLoading] = useState(false);
   const [view, setView] = useState<'list' | 'calendar'>('list');
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const fetchBookings = async () => {
     if (!user) return;
@@ -136,6 +137,16 @@ const MyBookings = () => {
     return { style };
   }, []);
 
+  const handleSelectEvent = useCallback((event: { start: Date }) => {
+    setSelectedDate(event.start);
+    setView('list');
+  }, []);
+
+  const dateKeyFromSelected = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null;
+  const bookingKeys = dateKeyFromSelected
+    ? (groupedBookings[dateKeyFromSelected] ? [dateKeyFromSelected] : [])
+    : Object.keys(groupedBookings).sort();
+
   return (
     <div className="p-4 md:p-6 space-y-6">
       <Card>
@@ -145,7 +156,7 @@ const MyBookings = () => {
               <CardTitle>My Bookings</CardTitle>
               <CardDescription>Here you can view and manage your upcoming classes.</CardDescription>
             </div>
-            <ToggleGroup type="single" value={view} onValueChange={(value) => { if (value) setView(value as 'list' | 'calendar') }} className="shrink-0">
+            <ToggleGroup type="single" value={view} onValueChange={(value) => { if (value) { setView(value as 'list' | 'calendar'); setSelectedDate(null); } }} className="shrink-0">
               <ToggleGroupItem value="list" aria-label="List view"><List className="h-4 w-4" /></ToggleGroupItem>
               <ToggleGroupItem value="calendar" aria-label="Calendar view"><CalendarIcon className="h-4 w-4" /></ToggleGroupItem>
             </ToggleGroup>
@@ -155,41 +166,50 @@ const MyBookings = () => {
           {loading ? (
             <p>Loading your bookings...</p>
           ) : view === 'list' ? (
-            Object.keys(groupedBookings).length === 0 ? (
-              <p className="text-gray-500">You have no classes booked.</p>
-            ) : (
-              <div className="space-y-8">
-                {Object.keys(groupedBookings).sort().map(dateKey => (
-                  <div key={dateKey}>
-                    <h3 className="text-lg font-semibold text-gray-700 mb-4 capitalize border-b pb-2">
-                      {format(new Date(dateKey + 'T00:00:00'), "EEEE, d MMMM", { locale: enGB })}
-                    </h3>
-                    <div className="space-y-4">
-                      {groupedBookings[dateKey].map((booking) => {
-                        const bgColor = booking.schedules.classes.background_color;
-                        const textColor = getContrastingTextColor(bgColor);
-                        return (
-                          <div 
-                            key={booking.id} 
-                            className="p-4 border rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
-                            style={{ backgroundColor: bgColor || 'transparent' }}
-                          >
-                            <div className="space-y-2">
-                              <h3 className="font-semibold text-lg" style={{ color: textColor }}>{booking.schedules.classes.name}</h3>
-                              <div className="flex items-center text-sm" style={{ color: textColor }}><User className="mr-2 h-4 w-4" />{booking.schedules.classes.instructor}</div>
-                              <div className="flex items-center text-sm" style={{ color: textColor }}><Clock className="mr-2 h-4 w-4" />{format(new Date(booking.schedules.start_time), 'p', { locale: enGB })}</div>
+            <>
+              {selectedDate && (
+                <div className="mb-4">
+                  <Button variant="secondary" onClick={() => setSelectedDate(null)}>
+                    &larr; Show All Bookings
+                  </Button>
+                </div>
+              )}
+              {bookingKeys.length === 0 ? (
+                <p className="text-gray-500">{selectedDate ? 'No bookings for this day.' : 'You have no classes booked.'}</p>
+              ) : (
+                <div className="space-y-8">
+                  {bookingKeys.map(dateKey => (
+                    <div key={dateKey}>
+                      <h3 className="text-lg font-semibold text-gray-700 mb-4 capitalize border-b pb-2">
+                        {format(new Date(dateKey + 'T00:00:00'), "EEEE, d MMMM", { locale: enGB })}
+                      </h3>
+                      <div className="space-y-4">
+                        {groupedBookings[dateKey].map((booking) => {
+                          const bgColor = booking.schedules.classes.background_color;
+                          const textColor = getContrastingTextColor(bgColor);
+                          return (
+                            <div 
+                              key={booking.id} 
+                              className="p-4 border rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+                              style={{ backgroundColor: bgColor || 'transparent' }}
+                            >
+                              <div className="space-y-2">
+                                <h3 className="font-semibold text-lg" style={{ color: textColor }}>{booking.schedules.classes.name}</h3>
+                                <div className="flex items-center text-sm" style={{ color: textColor }}><User className="mr-2 h-4 w-4" />{booking.schedules.classes.instructor}</div>
+                                <div className="flex items-center text-sm" style={{ color: textColor }}><Clock className="mr-2 h-4 w-4" />{format(new Date(booking.schedules.start_time), 'p', { locale: enGB })}</div>
+                              </div>
+                              <Button variant="outline" onClick={() => setBookingToCancel(booking)}>
+                                Cancel Booking
+                              </Button>
                             </div>
-                            <Button variant="outline" onClick={() => setBookingToCancel(booking)}>
-                              Cancel Booking
-                            </Button>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )
+                  ))}
+                </div>
+              )}
+            </>
           ) : (
             <div style={{ height: '70vh' }}>
               <Calendar
@@ -200,6 +220,7 @@ const MyBookings = () => {
                 defaultView={Views.MONTH}
                 views={[Views.MONTH]}
                 eventPropGetter={eventStyleGetter}
+                onSelectEvent={handleSelectEvent}
                 culture="en-GB"
                 messages={{
                   next: "Next",
