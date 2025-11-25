@@ -8,6 +8,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { format } from "date-fns";
 import { enGB } from "date-fns/locale";
 import { Calendar, Clock, User } from "lucide-react";
+import { getContrastingTextColor } from "@/utils/styleUtils";
 
 interface Booking {
   id: string;
@@ -18,6 +19,7 @@ interface Booking {
     classes: {
       name: string;
       instructor: string;
+      background_color: string | null;
     }
   }
 }
@@ -44,7 +46,8 @@ const MyBookings = () => {
             end_time,
             classes (
               name,
-              instructor
+              instructor,
+              background_color
             )
           )
         `)
@@ -97,19 +100,27 @@ const MyBookings = () => {
             <p className="text-gray-500">You have no classes booked.</p>
           ) : (
             <div className="space-y-4">
-              {bookings.map((booking) => (
-                <div key={booking.id} className="p-4 border rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-lg">{booking.schedules.classes.name}</h3>
-                    <div className="flex items-center text-sm text-gray-600"><User className="mr-2 h-4 w-4" />{booking.schedules.classes.instructor}</div>
-                    <div className="flex items-center text-sm text-gray-600"><Calendar className="mr-2 h-4 w-4" />{format(new Date(booking.schedules.start_time), 'PPP', { locale: enGB })}</div>
-                    <div className="flex items-center text-sm text-gray-600"><Clock className="mr-2 h-4 w-4" />{format(new Date(booking.schedules.start_time), 'p', { locale: enGB })}</div>
+              {bookings.map((booking) => {
+                const bgColor = booking.schedules.classes.background_color;
+                const textColor = getContrastingTextColor(bgColor);
+                return (
+                  <div 
+                    key={booking.id} 
+                    className="p-4 border rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+                    style={{ backgroundColor: bgColor || 'transparent' }}
+                  >
+                    <div className="space-y-2">
+                      <h3 className="font-semibold text-lg" style={{ color: textColor }}>{booking.schedules.classes.name}</h3>
+                      <div className="flex items-center text-sm" style={{ color: textColor }}><User className="mr-2 h-4 w-4" />{booking.schedules.classes.instructor}</div>
+                      <div className="flex items-center text-sm" style={{ color: textColor }}><Calendar className="mr-2 h-4 w-4" />{format(new Date(booking.schedules.start_time), 'PPP', { locale: enGB })}</div>
+                      <div className="flex items-center text-sm" style={{ color: textColor }}><Clock className="mr-2 h-4 w-4" />{format(new Date(booking.schedules.start_time), 'p', { locale: enGB })}</div>
+                    </div>
+                    <Button variant="outline" onClick={() => setBookingToCancel(booking)}>
+                      Cancel Booking
+                    </Button>
                   </div>
-                  <Button variant="outline" onClick={() => setBookingToCancel(booking)}>
-                    Cancel Booking
-                  </Button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>
