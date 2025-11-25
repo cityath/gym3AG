@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format, addDays, startOfWeek, endOfWeek } from "date-fns";
@@ -49,8 +49,8 @@ const BookingDashboard = () => {
   const { toast } = useToast();
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
+  const weekStart = useMemo(() => startOfWeek(currentDate, { weekStartsOn: 1 }), [currentDate]);
+  const weekEnd = useMemo(() => endOfWeek(currentDate, { weekStartsOn: 1 }), [currentDate]);
 
   useEffect(() => {
     const fetchBookingData = async () => {
@@ -139,7 +139,7 @@ const BookingDashboard = () => {
     };
 
     fetchBookingData();
-  }, [toast, currentDate, weekStart, weekEnd]);
+  }, [toast, weekStart, weekEnd]);
 
   const goToPreviousWeek = () => setCurrentDate(addDays(currentDate, -7));
   const goToNextWeek = () => setCurrentDate(addDays(currentDate, 7));
