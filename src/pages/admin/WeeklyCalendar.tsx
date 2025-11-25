@@ -205,36 +205,43 @@ const WeeklyCalendar = () => {
     const dayOfWeek = dayMapping[date.getDay()];
     const dayHours = businessHours.find(h => h.day_of_week === dayOfWeek);
 
-    const getTimeOnDate = (baseDate: Date, timeString: string | null): Date | null => {
-      if (!timeString) return null;
-      const [hours, minutes] = timeString.split(':').map(Number);
-      const newDate = new Date(baseDate);
-      newDate.setHours(hours, minutes, 0, 0);
-      return newDate;
-    };
-
-    // If there's no rule for this day (e.g., Sunday), it's a non-work day.
     if (!dayHours) {
       return { className: 'rbc-non-work-slot' };
     }
 
-    const morningOpen = getTimeOnDate(date, dayHours.morning_open_time);
-    const morningClose = getTimeOnDate(date, dayHours.morning_close_time);
-    const afternoonOpen = getTimeOnDate(date, dayHours.afternoon_open_time);
-    const afternoonClose = getTimeOnDate(date, dayHours.afternoon_close_time);
+    const toTimeValue = (d: Date) => d.getHours() + d.getMinutes() / 60;
+    const slotTimeValue = toTimeValue(date);
 
-    // Check if the current slot is within the morning shift.
-    if (morningOpen && morningClose && date >= morningOpen && date < morningClose) {
-      return {}; // It's a work hour, so no special class.
+    const parseTimeValue = (timeString: string | null): number | null => {
+      if (!timeString) return null;
+      const parts = timeString.split(':');
+      if (parts.length < 2) return null;
+      const hours = parseInt(parts[0], 10);
+      const minutes = parseInt(parts[1], 10);
+      if (isNaN(hours) || isNaN(minutes)) return null;
+      return hours + minutes / 60;
+    };
+
+    const morningOpen = parseTimeValue(dayHours.morning_open_time);
+    const morningClose = parseTimeValue(dayHours.morning_close_time);
+    const afternoonOpen = parseTimeValue(dayHours.afternoon_open_time);
+    const afternoonClose = parseTimeValue(dayHours.afternoon_close_time);
+
+    let isWorkHour = false;
+
+    if (morningOpen !== null && morningClose !== null) {
+      if (slotTimeValue >= morningOpen && slotTimeValue < morningClose) {
+        isWorkHour = true;
+      }
     }
 
-    // Check if the current slot is within the afternoon shift.
-    if (afternoonOpen && afternoonClose && date >= afternoonOpen && date < afternoonClose) {
-      return {}; // It's a work hour, so no special class.
+    if (afternoonOpen !== null && afternoonClose !== null) {
+      if (slotTimeValue >= afternoonOpen && slotTimeValue < afternoonClose) {
+        isWorkHour = true;
+      }
     }
 
-    // If it's not in the morning or afternoon shift, it's a non-work hour.
-    return { className: 'rbc-non-work-slot' };
+    return isWorkHour ? {} : { className: 'rbc-non-work-slot' };
   }, [businessHours]);
 
   return (
