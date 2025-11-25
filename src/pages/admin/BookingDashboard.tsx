@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { format, addDays, startOfWeek, endOfWeek } from "date-fns";
 import { enGB } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Users, Clock } from "lucide-react";
+import { Users, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 
 // Define interfaces for the data
 interface Profile {
@@ -46,17 +47,16 @@ const BookingDashboard = () => {
   const [groupedSchedules, setGroupedSchedules] = useState<Record<string, ProcessedSchedule[]>>({});
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+  const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
 
   useEffect(() => {
     const fetchBookingData = async () => {
       setLoading(true);
       try {
-        const today = new Date();
-        const sevenDaysFromNow = new Date();
-        sevenDaysFromNow.setDate(today.getDate() + 7);
-        today.setHours(0, 0, 0, 0); // Start of today
-
-        // 1. Fetch schedules with bookings (only user_id)
+        // 1. Fetch schedules with bookings for the current week
         const { data: schedulesData, error: schedulesError } = await supabase
           .from('schedules')
           .select(`
@@ -71,8 +71,8 @@ const BookingDashboard = () => {
               user_id
             )
           `)
-          .gte('start_time', today.toISOString())
-          .lte('start_time', sevenDaysFromNow.toISOString())
+          .gte('start_time', weekStart.toISOString())
+          .lte('start_time', weekEnd.toISOString())
           .order('start_time', { ascending: true });
 
         if (schedulesError) throw schedulesError;
@@ -139,21 +139,42 @@ const BookingDashboard = () => {
     };
 
     fetchBookingData();
-  }, [toast]);
+  }, [toast, currentDate, weekStart, weekEnd]);
+
+  const goToPreviousWeek = () => setCurrentDate(addDays(currentDate, -7));
+  const goToNextWeek = () => setCurrentDate(addDays(currentDate, 7));
+  const goToToday = () => setCurrentDate(new Date());
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Booking Dashboard</CardTitle>
-        <CardDescription>
-          Class bookings for the next 7 days. Click on a class to see the enrolled students.
-        </CardDescription>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <CardTitle>Booking Dashboard</CardTitle>
+            <CardDescription>
+              {`Viewing bookings from ${format(weekStart, "d MMM")} to ${format(weekEnd, "d MMM, yyyy")}`}
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={goToPreviousWeek}>
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Previous
+            </Button>
+            <Button variant="outline" size="sm" onClick={goToToday}>
+              Today
+            </Button>
+            <Button variant="outline" size="sm" onClick={goToNextWeek}>
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         {loading ? (
           <p>Loading data...</p>
         ) : Object.keys(groupedSchedules).length === 0 ? (
-          <p>No classes scheduled for the next 7 days.</p>
+          <p>No classes scheduled for this week.</p>
         ) : (
           <div className="space-y-6">
             {Object.keys(groupedSchedules).sort().map(dateKey => (
