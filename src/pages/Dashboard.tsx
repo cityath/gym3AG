@@ -39,6 +39,7 @@ const Dashboard = () => {
   const [filterType, setFilterType] = useState("all");
   const [filterInstructor, setFilterInstructor] = useState("all");
   const [instructors, setInstructors] = useState<string[]>([]);
+  const [classTypes, setClassTypes] = useState<string[]>([]);
   const [classToBook, setClassToBook] = useState<Class | null>(null);
 
   useEffect(() => {
@@ -107,7 +108,10 @@ const Dashboard = () => {
       setClasses(formattedClasses);
       
       const uniqueInstructors = Array.from(new Set(formattedClasses.map(cls => cls.instructor)));
-      setInstructors(uniqueInstructors);
+      setInstructors(uniqueInstructors.sort());
+
+      const uniqueTypes = Array.from(new Set(formattedClasses.map(cls => cls.type)));
+      setClassTypes(uniqueTypes.sort());
 
     } catch (error: any) {
       toast({
@@ -181,11 +185,9 @@ const Dashboard = () => {
               <SelectTrigger><SelectValue placeholder="All types" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All types</SelectItem>
-                <SelectItem value="Yoga">Yoga</SelectItem>
-                <SelectItem value="Funcional">Functional</SelectItem>
-                <SelectItem value="Spinning">Spinning</SelectItem>
-                <SelectItem value="Pilates">Pilates</SelectItem>
-                <SelectItem value="Baile">Dance</SelectItem>
+                {classTypes.map(type => (
+                  <SelectItem key={type} value={type}>{type}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
