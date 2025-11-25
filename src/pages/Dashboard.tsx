@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import DynamicIcon from "@/components/ui/dynamic-icon";
 import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { enGB } from "date-fns/locale";
 import BookingConfirmationDialog from "@/components/BookingConfirmationDialog";
 
 interface Class {
@@ -112,7 +112,7 @@ const Dashboard = () => {
     } catch (error: any) {
       toast({
         title: "Error",
-        description: "No se pudieron cargar las clases",
+        description: "Could not load classes",
         variant: "destructive",
       });
     } finally {
@@ -147,12 +147,12 @@ const Dashboard = () => {
 
       if (error) {
         const errorData = await error.context.json();
-        throw new Error(errorData.error || 'No se pudo realizar la reserva.');
+        throw new Error(errorData.error || 'Could not make the booking.');
       }
 
       toast({
-        title: "¡Reserva confirmada!",
-        description: "Tu lugar ha sido reservado exitosamente.",
+        title: "Booking confirmed!",
+        description: "Your spot has been successfully booked.",
       });
       fetchClasses();
     } catch (error: any) {
@@ -172,20 +172,20 @@ const Dashboard = () => {
   return (
     <div className="px-4 py-6 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Próximas Clases</h2>
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">Upcoming Classes</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de clase</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Class type</label>
             <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger><SelectValue placeholder="Todos los tipos" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="All types" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos los tipos</SelectItem>
+                <SelectItem value="all">All types</SelectItem>
                 <SelectItem value="Yoga">Yoga</SelectItem>
-                <SelectItem value="Funcional">Funcional</SelectItem>
+                <SelectItem value="Funcional">Functional</SelectItem>
                 <SelectItem value="Spinning">Spinning</SelectItem>
                 <SelectItem value="Pilates">Pilates</SelectItem>
-                <SelectItem value="Baile">Baile</SelectItem>
+                <SelectItem value="Baile">Dance</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -193,9 +193,9 @@ const Dashboard = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Instructor</label>
             <Select value={filterInstructor} onValueChange={setFilterInstructor}>
-              <SelectTrigger><SelectValue placeholder="Todos los instructores" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="All instructors" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos los instructores</SelectItem>
+                <SelectItem value="all">All instructors</SelectItem>
                 {instructors.map(instructor => (
                   <SelectItem key={instructor} value={instructor}>{instructor}</SelectItem>
                 ))}
@@ -206,15 +206,15 @@ const Dashboard = () => {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center h-64"><p>Cargando clases...</p></div>
+        <div className="flex justify-center items-center h-64"><p>Loading classes...</p></div>
       ) : filteredClasses.length === 0 ? (
-        <div className="text-center py-12"><p>No se encontraron clases con los filtros seleccionados.</p></div>
+        <div className="text-center py-12"><p>No classes found with the selected filters.</p></div>
       ) : (
         <div className="space-y-8">
           {Object.keys(groupedClasses).sort().map(dateKey => (
             <div key={dateKey}>
               <h3 className="text-lg font-semibold text-gray-700 mb-4 capitalize border-b pb-2">
-                {format(new Date(dateKey + 'T00:00:00'), "EEEE, d 'de' MMMM", { locale: es })}
+                {format(new Date(dateKey + 'T00:00:00'), "EEEE, d MMMM", { locale: enGB })}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {groupedClasses[dateKey].map((cls) => {
@@ -233,9 +233,9 @@ const Dashboard = () => {
                         <CardDescription>{cls.instructor}</CardDescription>
                       </CardHeader>
                       <CardContent className="flex-grow space-y-3">
-                        <div className="flex items-center text-sm text-gray-600"><Calendar className="mr-2 h-4 w-4" />{format(new Date(cls.start_time), 'PPP', { locale: es })}</div>
-                        <div className="flex items-center text-sm text-gray-600"><Clock className="mr-2 h-4 w-4" />{format(new Date(cls.start_time), 'p', { locale: es })} ({cls.duration} min)</div>
-                        <div className="flex items-center text-sm text-gray-600"><Users className="mr-2 h-4 w-4" />Disponibles: {availableSpots} de {cls.capacity}</div>
+                        <div className="flex items-center text-sm text-gray-600"><Calendar className="mr-2 h-4 w-4" />{format(new Date(cls.start_time), 'PPP', { locale: enGB })}</div>
+                        <div className="flex items-center text-sm text-gray-600"><Clock className="mr-2 h-4 w-4" />{format(new Date(cls.start_time), 'p', { locale: enGB })} ({cls.duration} min)</div>
+                        <div className="flex items-center text-sm text-gray-600"><Users className="mr-2 h-4 w-4" />Available: {availableSpots} of {cls.capacity}</div>
                       </CardContent>
                       <div className="px-6 pb-6">
                         <Button 
@@ -243,7 +243,7 @@ const Dashboard = () => {
                           disabled={isFull || cls.isBookedByUser} 
                           onClick={() => setClassToBook(cls)}
                         >
-                          {cls.isBookedByUser ? "Ya estás inscrito" : isFull ? "Clase llena" : "Reservar lugar"}
+                          {cls.isBookedByUser ? "Already booked" : isFull ? "Class full" : "Book spot"}
                         </Button>
                       </div>
                     </Card>

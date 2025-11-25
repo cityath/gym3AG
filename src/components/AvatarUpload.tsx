@@ -47,7 +47,7 @@ export const AvatarUpload = ({ url, onUpload, userId }: AvatarUploadProps) => {
       
       onUpload(publicUrl);
       setAvatarUrl(publicUrl);
-      toast({ title: 'Éxito', description: 'Avatar actualizado.' });
+      toast({ title: 'Success', description: 'Avatar updated.' });
 
     } catch (error: any) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
@@ -77,7 +77,7 @@ export const AvatarUpload = ({ url, onUpload, userId }: AvatarUploadProps) => {
           />
         </label>
       </div>
-      {uploading && <p className="text-sm text-gray-500">Subiendo...</p>}
+      {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
     </div>
   );
 };

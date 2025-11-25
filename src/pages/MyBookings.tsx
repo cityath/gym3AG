@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { enGB } from "date-fns/locale";
 import { Calendar, Clock, User } from "lucide-react";
 
 interface Booking {
@@ -54,7 +54,7 @@ const MyBookings = () => {
       if (error) throw error;
       setBookings(data as Booking[] || []);
     } catch (error: any) {
-      toast({ title: "Error", description: "No se pudieron cargar tus reservas.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not load your bookings.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -71,9 +71,9 @@ const MyBookings = () => {
       const { error } = await supabase.functions.invoke('cancel-booking', {
         body: { booking_id: bookingToCancel.id },
       });
-      if (error) throw new Error("No se pudo cancelar la reserva.");
+      if (error) throw new Error("Could not cancel the booking.");
       
-      toast({ title: "Éxito", description: "Reserva cancelada correctamente." });
+      toast({ title: "Success", description: "Booking cancelled successfully." });
       fetchBookings(); // Refresh the list
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -87,14 +87,14 @@ const MyBookings = () => {
     <div className="p-4 md:p-6 space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Mis Reservas</CardTitle>
-          <CardDescription>Aquí puedes ver y gestionar tus próximas clases.</CardDescription>
+          <CardTitle>My Bookings</CardTitle>
+          <CardDescription>Here you can view and manage your upcoming classes.</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p>Cargando tus reservas...</p>
+            <p>Loading your bookings...</p>
           ) : bookings.length === 0 ? (
-            <p className="text-gray-500">No tienes ninguna clase reservada.</p>
+            <p className="text-gray-500">You have no classes booked.</p>
           ) : (
             <div className="space-y-4">
               {bookings.map((booking) => (
@@ -102,11 +102,11 @@ const MyBookings = () => {
                   <div className="space-y-2">
                     <h3 className="font-semibold text-lg">{booking.schedules.classes.name}</h3>
                     <div className="flex items-center text-sm text-gray-600"><User className="mr-2 h-4 w-4" />{booking.schedules.classes.instructor}</div>
-                    <div className="flex items-center text-sm text-gray-600"><Calendar className="mr-2 h-4 w-4" />{format(new Date(booking.schedules.start_time), 'PPP', { locale: es })}</div>
-                    <div className="flex items-center text-sm text-gray-600"><Clock className="mr-2 h-4 w-4" />{format(new Date(booking.schedules.start_time), 'p', { locale: es })}</div>
+                    <div className="flex items-center text-sm text-gray-600"><Calendar className="mr-2 h-4 w-4" />{format(new Date(booking.schedules.start_time), 'PPP', { locale: enGB })}</div>
+                    <div className="flex items-center text-sm text-gray-600"><Clock className="mr-2 h-4 w-4" />{format(new Date(booking.schedules.start_time), 'p', { locale: enGB })}</div>
                   </div>
                   <Button variant="outline" onClick={() => setBookingToCancel(booking)}>
-                    Cancelar Reserva
+                    Cancel Booking
                   </Button>
                 </div>
               ))}
@@ -118,15 +118,15 @@ const MyBookings = () => {
       <AlertDialog open={!!bookingToCancel} onOpenChange={(open) => !open && setBookingToCancel(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Confirmas la cancelación?</AlertDialogTitle>
+            <AlertDialogTitle>Confirm cancellation?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Liberarás tu lugar en la clase de <strong>{bookingToCancel?.schedules.classes.name}</strong>.
+              This action cannot be undone. You will release your spot in the <strong>{bookingToCancel?.schedules.classes.name}</strong> class.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>No, mantener</AlertDialogCancel>
+            <AlertDialogCancel>No, keep it</AlertDialogCancel>
             <AlertDialogAction onClick={handleCancelBooking} disabled={cancelLoading}>
-              {cancelLoading ? "Cancelando..." : "Sí, cancelar"}
+              {cancelLoading ? "Cancelling..." : "Yes, cancel"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

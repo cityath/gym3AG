@@ -8,7 +8,7 @@ const Index = () => {
 
   useEffect(() => {
     if (loading) {
-      return; // Espera a que termine la carga
+      return; // Wait for loading to finish
     }
     if (user) {
       navigate("/dashboard", { replace: true });
@@ -17,10 +17,10 @@ const Index = () => {
     }
   }, [user, loading, navigate]);
 
-  // Muestra un indicador de carga mientras se redirige
+  // Show a loading indicator while redirecting
   return (
     <div className="flex items-center justify-center h-screen w-full">
-      <p>Cargando...</p>
+      <p>Loading...</p>
     </div>
   );
 };

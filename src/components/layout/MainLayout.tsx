@@ -17,13 +17,13 @@ const MainLayout = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen w-full">
-        <p>Cargando...</p>
+        <p>Loading...</p>
       </div>
     );
   }
 
   if (!user) {
-    return null; // Debería ser redirigido por el useEffect
+    return null; // Should be redirected by useEffect
   }
 
   return (

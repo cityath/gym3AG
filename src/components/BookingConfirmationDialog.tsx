@@ -9,7 +9,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { enGB } from "date-fns/locale";
 
 interface Class {
   id: string;
@@ -38,21 +38,21 @@ const BookingConfirmationDialog = ({ isOpen, onOpenChange, classData, onConfirm,
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Confirmar Reserva</AlertDialogTitle>
+          <AlertDialogTitle>Confirm Booking</AlertDialogTitle>
           <AlertDialogDescription>
-            Estás a punto de reservar tu lugar en la siguiente clase. Por favor, revisa los detalles.
+            You are about to book your spot in the following class. Please review the details.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="space-y-2 text-sm text-gray-700">
-          <p><strong>Clase:</strong> {classData.name}</p>
+          <p><strong>Class:</strong> {classData.name}</p>
           <p><strong>Instructor:</strong> {classData.instructor}</p>
-          <p><strong>Fecha:</strong> {format(new Date(classData.start_time), 'PPP', { locale: es })}</p>
-          <p><strong>Hora:</strong> {format(new Date(classData.start_time), 'p', { locale: es })} ({classData.duration} min)</p>
+          <p><strong>Date:</strong> {format(new Date(classData.start_time), 'PPP', { locale: enGB })}</p>
+          <p><strong>Time:</strong> {format(new Date(classData.start_time), 'p', { locale: enGB })} ({classData.duration} min)</p>
         </div>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction onClick={handleConfirm} disabled={loading}>
-            {loading ? "Confirmando..." : "Confirmar Reserva"}
+            {loading ? "Confirming..." : "Confirm Booking"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

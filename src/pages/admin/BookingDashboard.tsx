@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { enGB } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Users, Clock } from "lucide-react";
@@ -102,7 +102,7 @@ const BookingDashboard = () => {
         const processedData: ProcessedSchedule[] = (schedulesData as ScheduleData[]).map(schedule => ({
           id: schedule.id,
           startTime: schedule.start_time,
-          className: schedule.classes?.name || 'Clase desconocida',
+          className: schedule.classes?.name || 'Unknown Class',
           capacity: schedule.classes?.capacity || 0,
           backgroundColor: schedule.classes?.background_color || null,
           bookedUsers: schedule.bookings
@@ -130,7 +130,7 @@ const BookingDashboard = () => {
         console.error("Error fetching booking data:", error);
         toast({
           title: "Error",
-          description: "No se pudieron cargar los datos de las reservas.",
+          description: "Could not load booking data.",
           variant: "destructive",
         });
       } finally {
@@ -146,20 +146,20 @@ const BookingDashboard = () => {
       <CardHeader>
         <CardTitle>Booking Dashboard</CardTitle>
         <CardDescription>
-          Reservas de clases para los próximos 7 días. Haz clic en una clase para ver los alumnos inscritos.
+          Class bookings for the next 7 days. Click on a class to see the enrolled students.
         </CardDescription>
       </CardHeader>
       <CardContent>
         {loading ? (
-          <p>Cargando datos...</p>
+          <p>Loading data...</p>
         ) : Object.keys(groupedSchedules).length === 0 ? (
-          <p>No hay clases programadas para los próximos 7 días.</p>
+          <p>No classes scheduled for the next 7 days.</p>
         ) : (
           <div className="space-y-6">
             {Object.keys(groupedSchedules).sort().map(dateKey => (
               <div key={dateKey}>
                 <h3 className="text-lg font-semibold text-gray-800 mb-3 capitalize border-b pb-2">
-                  {format(new Date(dateKey + 'T00:00:00'), "EEEE, d 'de' MMMM", { locale: es })}
+                  {format(new Date(dateKey + 'T00:00:00'), "EEEE, d MMMM", { locale: enGB })}
                 </h3>
                 <Accordion type="multiple" className="w-full space-y-2">
                   {groupedSchedules[dateKey].map(schedule => {
@@ -176,7 +176,7 @@ const BookingDashboard = () => {
                                 <span className="font-semibold">{schedule.className}</span>
                                 <div className="flex items-center text-sm text-gray-600">
                                   <Clock className="mr-1.5 h-4 w-4" />
-                                  {format(new Date(schedule.startTime), 'p', { locale: es })}
+                                  {format(new Date(schedule.startTime), 'p', { locale: enGB })}
                                 </div>
                               </div>
                               <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -197,7 +197,7 @@ const BookingDashboard = () => {
                               ))}
                             </ul>
                           ) : (
-                            <p className="text-gray-500 pl-2">Nadie ha reservado esta clase todavía.</p>
+                            <p className="text-gray-500 pl-2">No one has booked this class yet.</p>
                           )}
                         </AccordionContent>
                       </AccordionItem>

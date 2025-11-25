@@ -1,19 +1,19 @@
 import { useEffect, useState, useCallback } from "react";
 import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
-import es from 'date-fns/locale/es';
+import { enGB } from 'date-fns/locale';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import ScheduleForm from "@/components/admin/ScheduleForm";
 
 const locales = {
-  'es': es,
+  'en-GB': enGB,
 };
 const localizer = dateFnsLocalizer({
   format,
   parse,
-  startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }), // Lunes
+  startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }), // Monday
   getDay,
   locales,
 });
@@ -45,7 +45,7 @@ interface BusinessHours {
 }
 
 const dayMapping = [
-  "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"
+  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 ];
 
 const WeeklyCalendar = () => {
@@ -120,7 +120,7 @@ const WeeklyCalendar = () => {
       setEvents(formattedEvents);
 
     } catch (error: any) {
-      toast({ title: "Error", description: "No se pudo cargar la programación.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not load the schedule.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -167,9 +167,9 @@ const WeeklyCalendar = () => {
     }
 
     if (error) {
-      toast({ title: "Error", description: "No se pudo guardar la clase programada.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not save the scheduled class.", variant: "destructive" });
     } else {
-      toast({ title: "Éxito", description: "Programación guardada correctamente." });
+      toast({ title: "Success", description: "Schedule saved successfully." });
       fetchSchedulesAndClasses();
     }
     handleCloseDialog();
@@ -178,9 +178,9 @@ const WeeklyCalendar = () => {
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from("schedules").delete().eq("id", id);
     if (error) {
-      toast({ title: "Error", description: "No se pudo eliminar la clase programada.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not delete the scheduled class.", variant: "destructive" });
     } else {
-      toast({ title: "Éxito", description: "Clase programada eliminada." });
+      toast({ title: "Success", description: "Scheduled class deleted." });
       fetchSchedulesAndClasses();
     }
     handleCloseDialog();
@@ -236,13 +236,13 @@ const WeeklyCalendar = () => {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Programación Semanal</CardTitle>
+          <CardTitle>Weekly Schedule</CardTitle>
           <CardDescription>
-            Haz clic en un horario para añadir una clase o en una clase existente para editarla. Los horarios no laborables aparecen en gris.
+            Click on a time slot to add a class or on an existing class to edit it. Non-working hours appear in grey.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? <p>Cargando calendario...</p> : (
+          {loading ? <p>Loading calendar...</p> : (
             <div style={{ height: '70vh' }}>
               <Calendar
                 localizer={localizer}
@@ -256,15 +256,15 @@ const WeeklyCalendar = () => {
                 onSelectEvent={handleSelectEvent}
                 eventPropGetter={eventStyleGetter}
                 slotPropGetter={slotPropGetter}
-                culture="es"
+                culture="en-GB"
                 min={timeRange?.min}
                 max={timeRange?.max}
                 messages={{
-                  next: "Siguiente",
-                  previous: "Anterior",
-                  today: "Hoy",
-                  week: "Semana",
-                  noEventsInRange: "No hay eventos en este rango.",
+                  next: "Next",
+                  previous: "Previous",
+                  today: "Today",
+                  week: "Week",
+                  noEventsInRange: "No events in this range.",
                 }}
               />
             </div>

@@ -20,14 +20,14 @@ const Header = () => {
         <div className="hidden md:flex items-center space-x-4">
           {(profile?.role === 'admin' || profile?.role === 'instructor') && (
             <Button variant="ghost" asChild>
-              <Link to="/admin">Panel Admin</Link>
+              <Link to="/admin">Admin Panel</Link>
             </Button>
           )}
           <span className="text-sm text-gray-600">
-            Hola, <span className="font-bold text-gray-800">{profile?.first_name || user?.email}</span>
+            Hello, <span className="font-bold text-gray-800">{profile?.first_name || user?.email}</span>
           </span>
           <Button variant="outline" onClick={handleSignOut}>
-            Cerrar sesión
+            Sign Out
           </Button>
         </div>
       </div>

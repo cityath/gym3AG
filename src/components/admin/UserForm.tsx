@@ -18,20 +18,20 @@ interface UserFormProps {
 }
 
 const baseSchema = z.object({
-  first_name: z.string().min(2, { message: "El nombre debe tener al menos 2 caracteres." }),
-  last_name: z.string().min(2, { message: "El apellido debe tener al menos 2 caracteres." }),
-  role: z.enum(["user", "admin", "instructor"], { required_error: "Debes seleccionar un rol." }),
+  first_name: z.string().min(2, { message: "First name must be at least 2 characters." }),
+  last_name: z.string().min(2, { message: "Last name must be at least 2 characters." }),
+  role: z.enum(["user", "admin", "instructor"], { required_error: "You must select a role." }),
   phone: z.string().optional(),
-  avatar_url: z.string().url({ message: "Por favor, introduce una URL válida." }).optional().or(z.literal('')),
+  avatar_url: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
 });
 
 const createUserSchema = baseSchema.extend({
-  email: z.string().email({ message: "Por favor, introduce un email válido." }),
-  password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres." }),
+  email: z.string().email({ message: "Please enter a valid email." }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters." }),
 });
 
 const updateUserSchema = baseSchema.extend({
-  password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres." }).optional().or(z.literal('')),
+  password: z.string().min(6, { message: "Password must be at least 6 characters." }).optional().or(z.literal('')),
 });
 
 const UserForm = ({ isOpen, onClose, onSave, user }: UserFormProps) => {
@@ -72,9 +72,9 @@ const UserForm = ({ isOpen, onClose, onSave, user }: UserFormProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Editar Usuario" : "Crear Usuario"}</DialogTitle>
+          <DialogTitle>{isEditing ? "Edit User" : "Create User"}</DialogTitle>
           <DialogDescription>
-            {isEditing ? "Modifica los detalles del usuario." : "Completa el formulario para añadir un nuevo usuario."}
+            {isEditing ? "Modify the user's details." : "Complete the form to add a new user."}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -113,33 +113,33 @@ const UserForm = ({ isOpen, onClose, onSave, user }: UserFormProps) => {
             {isEditing ? (
               <FormField control={form.control} name="password" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nueva Contraseña</FormLabel>
-                  <FormControl><Input type="password" {...field} placeholder="Dejar en blanco para no cambiar" /></FormControl>
+                  <FormLabel>New Password</FormLabel>
+                  <FormControl><Input type="password" {...field} placeholder="Leave blank to keep current" /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
             ) : (
               <FormField control={form.control} name="password" render={({ field }) => (
-                <FormItem><FormLabel>Contraseña</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Password</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
             )}
 
             <FormField control={form.control} name="first_name" render={({ field }) => (
-              <FormItem><FormLabel>Nombre</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
             )} />
             <FormField control={form.control} name="last_name" render={({ field }) => (
-              <FormItem><FormLabel>Apellido</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
             )} />
             <FormField control={form.control} name="phone" render={({ field }) => (
-              <FormItem><FormLabel>Teléfono</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem><FormLabel>Phone</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
             )} />
             <FormField control={form.control} name="role" render={({ field }) => (
-              <FormItem><FormLabel>Rol</FormLabel>
+              <FormItem><FormLabel>Role</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={user?.role || "user"}>
-                  <FormControl><SelectTrigger><SelectValue placeholder="Selecciona un rol" /></SelectTrigger></FormControl>
+                  <FormControl><SelectTrigger><SelectValue placeholder="Select a role" /></SelectTrigger></FormControl>
                   <SelectContent>
-                    <SelectItem value="user">Usuario</SelectItem>
-                    <SelectItem value="admin">Administrador</SelectItem>
+                    <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="admin">Administrator</SelectItem>
                     <SelectItem value="instructor">Instructor</SelectItem>
                   </SelectContent>
                 </Select>
@@ -147,8 +147,8 @@ const UserForm = ({ isOpen, onClose, onSave, user }: UserFormProps) => {
               </FormItem>
             )} />
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
-              <Button type="submit">Guardar</Button>
+              <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
+              <Button type="submit">Save</Button>
             </DialogFooter>
           </form>
         </Form>

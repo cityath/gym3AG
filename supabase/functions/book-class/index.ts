@@ -64,27 +64,27 @@ serve(async (req) => {
         status: 201 // 201 Created for success
       });
     } else if (result === 'ALREADY_BOOKED') {
-       return new Response(JSON.stringify({ error: 'Ya estás inscrito en esta clase.' }), { 
+       return new Response(JSON.stringify({ error: 'You are already booked for this class.' }), { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 409
       });
     } else if (result === 'CLASS_FULL') {
-      return new Response(JSON.stringify({ error: 'La clase está llena.' }), { 
+      return new Response(JSON.stringify({ error: 'The class is full.' }), { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 409 // 409 Conflict is a good status here
       });
     } else if (result === 'SCHEDULE_NOT_FOUND') {
-       return new Response(JSON.stringify({ error: 'La clase programada no fue encontrada.' }), { 
+       return new Response(JSON.stringify({ error: 'Scheduled class not found.' }), { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 404
       });
     } else if (result === 'ERROR_INSERT_FAILED') {
-       return new Response(JSON.stringify({ error: 'No se pudo registrar la reserva en la base de datos.' }), { 
+       return new Response(JSON.stringify({ error: 'Could not register the booking in the database.' }), { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500
       });
     } else {
-       return new Response(JSON.stringify({ error: 'Ocurrió un error inesperado al realizar la reserva.' }), { 
+       return new Response(JSON.stringify({ error: 'An unexpected error occurred while making the booking.' }), { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500
       });

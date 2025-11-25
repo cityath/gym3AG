@@ -37,11 +37,11 @@ interface Instructor {
 }
 
 const classSchema = z.object({
-  name: z.string().min(3, { message: "El nombre debe tener al menos 3 caracteres." }),
-  type: z.string().min(3, { message: "El tipo debe tener al menos 3 caracteres." }),
-  instructor: z.string().min(1, { message: "Debes seleccionar un instructor." }),
-  duration: z.coerce.number().int().positive({ message: "La duración debe ser un número positivo." }),
-  capacity: z.coerce.number().int().positive({ message: "La capacidad debe ser un número positivo." }),
+  name: z.string().min(3, { message: "Name must be at least 3 characters." }),
+  type: z.string().min(3, { message: "Type must be at least 3 characters." }),
+  instructor: z.string().min(1, { message: "You must select an instructor." }),
+  duration: z.coerce.number().int().positive({ message: "Duration must be a positive number." }),
+  capacity: z.coerce.number().int().positive({ message: "Capacity must be a positive number." }),
   icon: z.string().optional(),
   background_color: z.string().optional(),
 });
@@ -92,7 +92,7 @@ const ClassManagement = () => {
         setInstructors(formattedInstructors);
       }
     } catch (error: any) {
-      toast({ title: "Error", description: "No se pudieron cargar los datos. " + error.message, variant: "destructive" });
+      toast({ title: "Error", description: "Could not load data. " + error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -121,9 +121,9 @@ const ClassManagement = () => {
     if (!selectedClass) return;
     const { error } = await supabase.from("classes").delete().eq("id", selectedClass.id);
     if (error) {
-      toast({ title: "Error", description: "No se pudo eliminar la clase.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not delete class.", variant: "destructive" });
     } else {
-      toast({ title: "Éxito", description: "Clase eliminada correctamente." });
+      toast({ title: "Success", description: "Class deleted successfully." });
       fetchData();
     }
     setIsAlertOpen(false);
@@ -134,16 +134,16 @@ const ClassManagement = () => {
     if (selectedClass) { // Update
       const { error } = await supabase.from("classes").update(values).eq("id", selectedClass.id);
       if (error) {
-        toast({ title: "Error", description: "No se pudo actualizar la clase.", variant: "destructive" });
+        toast({ title: "Error", description: "Could not update class.", variant: "destructive" });
       } else {
-        toast({ title: "Éxito", description: "Clase actualizada correctamente." });
+        toast({ title: "Success", description: "Class updated successfully." });
       }
     } else { // Create
       const { error } = await supabase.from("classes").insert([values]);
       if (error) {
-        toast({ title: "Error", description: "No se pudo crear la clase.", variant: "destructive" });
+        toast({ title: "Error", description: "Could not create class.", variant: "destructive" });
       } else {
-        toast({ title: "Éxito", description: "Clase creada correctamente." });
+        toast({ title: "Success", description: "Class created successfully." });
       }
     }
     fetchData();
@@ -156,28 +156,28 @@ const ClassManagement = () => {
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle>Clases</CardTitle>
-              <CardDescription>Gestiona los tipos de clases, instructores, duración y capacidad.</CardDescription>
+              <CardTitle>Classes</CardTitle>
+              <CardDescription>Manage class types, instructors, duration, and capacity.</CardDescription>
             </div>
             <Button onClick={() => handleOpenDialog()}>
               <PlusCircle className="mr-2 h-4 w-4" />
-              Crear Clase
+              Create Class
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          {loading ? <p>Cargando clases...</p> : (
+          {loading ? <p>Loading classes...</p> : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Icono</TableHead>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Deporte</TableHead>
+                  <TableHead>Icon</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Sport</TableHead>
                   <TableHead>Instructor</TableHead>
-                  <TableHead>Duración (min)</TableHead>
-                  <TableHead>Capacidad Máx.</TableHead>
-                  <TableHead>Color</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
+                  <TableHead>Duration (min)</TableHead>
+                  <TableHead>Max. Capacity</TableHead>
+                  <TableHead>Colour</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -212,8 +212,8 @@ const ClassManagement = () => {
                           <Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleOpenDialog(cls)}><Pencil className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleOpenAlert(cls)} className="text-red-600"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleOpenDialog(cls)}><Pencil className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleOpenAlert(cls)} className="text-red-600"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -228,12 +228,12 @@ const ClassManagement = () => {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{selectedClass ? "Editar Clase" : "Crear Clase"}</DialogTitle>
+            <DialogTitle>{selectedClass ? "Edit Class" : "Create Class"}</DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Nombre</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="type" render={({ field }) => (<FormItem><FormLabel>Deporte</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="type" render={({ field }) => (<FormItem><FormLabel>Sport</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
               <FormField
                 control={form.control}
                 name="instructor"
@@ -243,7 +243,7 @@ const ClassManagement = () => {
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecciona un instructor" />
+                          <SelectValue placeholder="Select an instructor" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -258,11 +258,11 @@ const ClassManagement = () => {
                   </FormItem>
                 )}
               />
-              <FormField control={form.control} name="duration" render={({ field }) => (<FormItem><FormLabel>Duración (min)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="capacity" render={({ field }) => (<FormItem><FormLabel>Capacidad Máx.</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="icon" render={({ field }) => (<FormItem><FormLabel>Icono</FormLabel><FormControl><IconPicker value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="background_color" render={({ field }) => (<FormItem><FormLabel>Color de Fondo</FormLabel><FormControl><ColorPicker value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem>)} />
-              <Button type="submit" className="w-full">{selectedClass ? "Guardar Cambios" : "Crear Clase"}</Button>
+              <FormField control={form.control} name="duration" render={({ field }) => (<FormItem><FormLabel>Duration (min)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="capacity" render={({ field }) => (<FormItem><FormLabel>Max. Capacity</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="icon" render={({ field }) => (<FormItem><FormLabel>Icon</FormLabel><FormControl><IconPicker value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="background_color" render={({ field }) => (<FormItem><FormLabel>Background Colour</FormLabel><FormControl><ColorPicker value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem>)} />
+              <Button type="submit" className="w-full">{selectedClass ? "Save Changes" : "Create Class"}</Button>
             </form>
           </Form>
         </DialogContent>
@@ -271,12 +271,12 @@ const ClassManagement = () => {
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-            <AlertDialogDescription>Esta acción no se puede deshacer. Esto eliminará permanentemente la clase.</AlertDialogDescription>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>This action cannot be undone. This will permanently delete the class.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Eliminar</AlertDialogAction>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

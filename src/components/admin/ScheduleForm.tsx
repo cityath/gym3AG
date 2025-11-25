@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format, parse } from 'date-fns';
-import es from 'date-fns/locale/es';
+import { enGB } from 'date-fns/locale';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -38,9 +38,9 @@ interface ScheduleFormProps {
 }
 
 const formSchema = z.object({
-  class_id: z.string().uuid({ message: "Debes seleccionar una clase." }),
-  start_time: z.string().min(1, { message: "La hora de inicio es obligatoria." }),
-  end_time: z.string().min(1, { message: "La hora de fin es obligatoria." }),
+  class_id: z.string().uuid({ message: "You must select a class." }),
+  start_time: z.string().min(1, { message: "Start time is required." }),
+  end_time: z.string().min(1, { message: "End time is required." }),
 });
 
 const ScheduleForm = ({ isOpen, onClose, onSave, onDelete, event, slot, classes }: ScheduleFormProps) => {
@@ -98,23 +98,23 @@ const ScheduleForm = ({ isOpen, onClose, onSave, onDelete, event, slot, classes 
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{event ? "Editar Clase Programada" : "Añadir Clase al Horario"}</DialogTitle>
+          <DialogTitle>{event ? "Edit Scheduled Class" : "Add Class to Schedule"}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="text-sm font-medium">
-              Fecha: {selectedDate ? format(selectedDate, 'PPP', { locale: es }) : ''}
+              Date: {selectedDate ? format(selectedDate, 'PPP', { locale: enGB }) : ''}
             </div>
             <FormField
               control={form.control}
               name="class_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Clase</FormLabel>
+                  <FormLabel>Class</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecciona una clase" />
+                        <SelectValue placeholder="Select a class" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -133,7 +133,7 @@ const ScheduleForm = ({ isOpen, onClose, onSave, onDelete, event, slot, classes 
                 name="start_time"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Hora de inicio</FormLabel>
+                    <FormLabel>Start time</FormLabel>
                     <FormControl>
                       <Input type="time" {...field} />
                     </FormControl>
@@ -146,7 +146,7 @@ const ScheduleForm = ({ isOpen, onClose, onSave, onDelete, event, slot, classes 
                 name="end_time"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Hora de fin</FormLabel>
+                    <FormLabel>End time</FormLabel>
                     <FormControl>
                       <Input type="time" {...field} />
                     </FormControl>
@@ -158,12 +158,12 @@ const ScheduleForm = ({ isOpen, onClose, onSave, onDelete, event, slot, classes 
             <DialogFooter className="sm:justify-between pt-4">
               {event ? (
                 <Button type="button" variant="destructive" onClick={() => onDelete(event.id)}>
-                  <Trash2 className="mr-2 h-4 w-4" /> Eliminar
+                  <Trash2 className="mr-2 h-4 w-4" /> Delete
                 </Button>
               ) : <div />}
               <div className="flex gap-2">
-                <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
-                <Button type="submit">Guardar</Button>
+                <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
+                <Button type="submit">Save</Button>
               </div>
             </DialogFooter>
           </form>

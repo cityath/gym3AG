@@ -14,10 +14,10 @@ import { useState } from "react";
 import { AvatarUpload } from "./AvatarUpload";
 
 const profileSchema = z.object({
-  first_name: z.string().min(2, { message: "El nombre debe tener al menos 2 caracteres." }),
-  last_name: z.string().min(2, { message: "El apellido debe tener al menos 2 caracteres." }),
+  first_name: z.string().min(2, { message: "First name must be at least 2 characters long." }),
+  last_name: z.string().min(2, { message: "Last name must be at least 2 characters long." }),
   phone: z.string().optional(),
-  avatar_url: z.string().url({ message: "Por favor, introduce una URL válida." }).optional().or(z.literal('')),
+  avatar_url: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
 });
 
 const ProfileForm = () => {
@@ -45,9 +45,9 @@ const ProfileForm = () => {
       .eq("id", user.id);
 
     if (error) {
-      toast({ title: "Error", description: "No se pudo actualizar tu perfil.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not update your profile.", variant: "destructive" });
     } else {
-      toast({ title: "Éxito", description: "Tu perfil ha sido actualizado." });
+      toast({ title: "Success", description: "Your profile has been updated." });
       await refreshProfile();
     }
     setLoading(false);
@@ -56,8 +56,8 @@ const ProfileForm = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Mi Perfil</CardTitle>
-        <CardDescription>Actualiza tu información personal.</CardDescription>
+        <CardTitle>My Profile</CardTitle>
+        <CardDescription>Update your personal information.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -79,17 +79,17 @@ const ProfileForm = () => {
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="first_name" render={({ field }) => (
-                <FormItem><FormLabel>Nombre</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="last_name" render={({ field }) => (
-                <FormItem><FormLabel>Apellido</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
             <FormField control={form.control} name="phone" render={({ field }) => (
-              <FormItem><FormLabel>Teléfono</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem><FormLabel>Phone</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
             )} />
             <div className="flex justify-end">
-              <Button type="submit" disabled={loading}>{loading ? "Guardando..." : "Guardar Cambios"}</Button>
+              <Button type="submit" disabled={loading}>{loading ? "Saving..." : "Save Changes"}</Button>
             </div>
           </form>
         </Form>

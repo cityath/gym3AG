@@ -33,7 +33,7 @@ const UserManagement = () => {
     if (error) {
       toast({
         title: "Error",
-        description: "No se pudieron cargar los usuarios.",
+        description: "Could not load users.",
         variant: "destructive",
       });
     } else {
@@ -74,8 +74,8 @@ const UserManagement = () => {
       if (error) throw new Error(error.message);
 
       toast({
-        title: "Éxito",
-        description: `Usuario ${id ? 'actualizado' : 'creado'} correctamente.`,
+        title: "Success",
+        description: `User ${id ? 'updated' : 'created'} successfully.`,
       });
       fetchUsers();
       setIsDialogOpen(false);
@@ -97,8 +97,8 @@ const UserManagement = () => {
       if (error) throw new Error(error.message);
 
       toast({
-        title: "Éxito",
-        description: "Usuario eliminado correctamente.",
+        title: "Success",
+        description: "User deleted successfully.",
       });
       fetchUsers();
     } catch (error: any) {
@@ -115,9 +115,9 @@ const UserManagement = () => {
 
   const getRoleName = (role: string) => {
     switch (role) {
-      case 'admin': return 'Administrador';
+      case 'admin': return 'Administrator';
       case 'instructor': return 'Instructor';
-      default: return 'Usuario';
+      default: return 'User';
     }
   };
 
@@ -127,27 +127,27 @@ const UserManagement = () => {
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle>Usuarios</CardTitle>
-              <CardDescription>Gestiona los usuarios y sus roles en el sistema.</CardDescription>
+              <CardTitle>Users</CardTitle>
+              <CardDescription>Manage users and their roles in the system.</CardDescription>
             </div>
             <Button onClick={() => handleOpenDialog()}>
               <PlusCircle className="mr-2 h-4 w-4" />
-              Crear Usuario
+              Create User
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p>Cargando usuarios...</p>
+            <p>Loading users...</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nombre</TableHead>
+                  <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>Teléfono</TableHead>
-                  <TableHead>Rol</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -171,8 +171,8 @@ const UserManagement = () => {
                           <Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleOpenDialog(user)}><Pencil className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleOpenAlert(user)} className="text-red-600"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleOpenDialog(user)}><Pencil className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleOpenAlert(user)} className="text-red-600"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -194,14 +194,14 @@ const UserManagement = () => {
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Esto eliminará permanentemente al usuario y todos sus datos asociados.
+              This action cannot be undone. This will permanently delete the user and all their associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteUser}>Eliminar</AlertDialogAction>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteUser}>Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

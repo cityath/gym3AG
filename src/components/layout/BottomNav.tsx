@@ -17,7 +17,7 @@ const BottomNav = () => {
           }
         >
           <CalendarDays className="h-6 w-6 mb-1" />
-          <span>Clases</span>
+          <span>Classes</span>
         </NavLink>
         <NavLink
           to="/my-bookings"
@@ -26,7 +26,7 @@ const BottomNav = () => {
           }
         >
           <Ticket className="h-6 w-6 mb-1" />
-          <span>Mis Reservas</span>
+          <span>My Bookings</span>
         </NavLink>
         <NavLink
           to="/profile"
@@ -35,7 +35,7 @@ const BottomNav = () => {
           }
         >
           <User className="h-6 w-6 mb-1" />
-          <span>Perfil</span>
+          <span>Profile</span>
         </NavLink>
         {(profile?.role === 'admin' || profile?.role === 'instructor') && (
           <NavLink

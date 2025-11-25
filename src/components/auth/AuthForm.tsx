@@ -25,19 +25,19 @@ interface AuthFormProps {
 }
 
 const emailValidation = z.string().refine(val => /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(val), {
-    message: "Por favor, introduce un email con un formato válido (ej: tu@email.com)."
+    message: "Please enter a valid email address (e.g., you@email.com)."
 });
 
 const signUpSchema = z.object({
-  firstName: z.string().min(2, { message: "El nombre debe tener al menos 2 caracteres." }),
-  lastName: z.string().min(2, { message: "El apellido debe tener al menos 2 caracteres." }),
+  firstName: z.string().min(2, { message: "First name must be at least 2 characters long." }),
+  lastName: z.string().min(2, { message: "Last name must be at least 2 characters long." }),
   email: emailValidation,
-  password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres." }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters long." }),
 });
 
 const signInSchema = z.object({
   email: emailValidation,
-  password: z.string().min(1, { message: "La contraseña es obligatoria." }),
+  password: z.string().min(1, { message: "Password is required." }),
 });
 
 const AuthForm = ({ isSignUp = false }: AuthFormProps) => {
@@ -73,8 +73,8 @@ const AuthForm = ({ isSignUp = false }: AuthFormProps) => {
         if (error) throw error;
 
         toast({
-          title: "¡Registro exitoso!",
-          description: "Te hemos enviado un correo de confirmación. Por favor verifica tu email.",
+          title: "Registration successful!",
+          description: "We've sent you a confirmation email. Please check your inbox.",
         });
         
         navigate("/login");
@@ -88,8 +88,8 @@ const AuthForm = ({ isSignUp = false }: AuthFormProps) => {
         if (error) throw error;
 
         toast({
-          title: "¡Inicio de sesión exitoso!",
-          description: "Bienvenido de nuevo.",
+          title: "Sign-in successful!",
+          description: "Welcome back.",
         });
 
         navigate("/dashboard");
@@ -108,11 +108,11 @@ const AuthForm = ({ isSignUp = false }: AuthFormProps) => {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>{isSignUp ? "Crear cuenta" : "Iniciar sesión"}</CardTitle>
+        <CardTitle>{isSignUp ? "Create Account" : "Sign In"}</CardTitle>
         <CardDescription>
           {isSignUp
-            ? "Regístrate para acceder a las clases del gimnasio"
-            : "Ingresa tus credenciales para acceder"}
+            ? "Sign up to access gym classes"
+            : "Enter your credentials to sign in"}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -125,9 +125,9 @@ const AuthForm = ({ isSignUp = false }: AuthFormProps) => {
                   name="firstName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nombre</FormLabel>
+                      <FormLabel>First Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Tu nombre" {...field} />
+                        <Input placeholder="Your first name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -138,9 +138,9 @@ const AuthForm = ({ isSignUp = false }: AuthFormProps) => {
                   name="lastName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Apellido</FormLabel>
+                      <FormLabel>Last Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Tu apellido" {...field} />
+                        <Input placeholder="Your last name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -156,7 +156,7 @@ const AuthForm = ({ isSignUp = false }: AuthFormProps) => {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="tu@email.com" {...field} />
+                    <Input type="email" placeholder="you@email.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -168,7 +168,7 @@ const AuthForm = ({ isSignUp = false }: AuthFormProps) => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Contraseña</FormLabel>
+                  <FormLabel>Password</FormLabel>
                   <FormControl>
                     <Input type="password" placeholder="••••••••" {...field} />
                   </FormControl>
@@ -178,19 +178,19 @@ const AuthForm = ({ isSignUp = false }: AuthFormProps) => {
             />
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Procesando..." : isSignUp ? "Registrarse" : "Iniciar sesión"}
+              {loading ? "Processing..." : isSignUp ? "Sign Up" : "Sign In"}
             </Button>
           </form>
         </Form>
 
         <div className="mt-4 text-center text-sm">
-          {isSignUp ? "¿Ya tienes cuenta?" : "¿No tienes cuenta?"}{" "}
+          {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
           <button
             type="button"
             onClick={() => navigate(isSignUp ? "/login" : "/register")}
             className="text-blue-600 hover:underline"
           >
-            {isSignUp ? "Inicia sesión" : "Regístrate"}
+            {isSignUp ? "Sign in" : "Sign up"}
           </button>
         </div>
       </CardContent>

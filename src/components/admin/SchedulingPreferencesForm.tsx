@@ -39,22 +39,22 @@ interface GroupedRule {
 }
 
 const ruleSchema = z.object({
-  day_of_week: z.array(z.string()).nonempty({ message: "Debes seleccionar al menos un día." }),
-  start_time: z.string().min(1, { message: "Debes seleccionar una hora." }),
-  class_id: z.string().uuid({ message: "Debes seleccionar una clase." }),
+  day_of_week: z.array(z.string()).nonempty({ message: "You must select at least one day." }),
+  start_time: z.string().min(1, { message: "You must select a time." }),
+  class_id: z.string().uuid({ message: "You must select a class." }),
 });
 
-const daysOfWeek = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-const dayOrder = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const daySortFunction = (a: string, b: string) => dayOrder.indexOf(a) - dayOrder.indexOf(b);
 
 const dayInitials: { [key: string]: string } = {
-  "Lunes": "L",
-  "Martes": "M",
-  "Miércoles": "X",
-  "Jueves": "J",
-  "Viernes": "V",
-  "Sábado": "S",
+  "Monday": "M",
+  "Tuesday": "T",
+  "Wednesday": "W",
+  "Thursday": "T",
+  "Friday": "F",
+  "Saturday": "S",
 };
 
 const SchedulingPreferencesForm = () => {
@@ -140,7 +140,7 @@ const SchedulingPreferencesForm = () => {
         setTimeSlots(sortedSlots);
       }
     } catch (error) {
-      toast({ title: "Error", description: "No se pudieron cargar los datos.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not load data.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -154,7 +154,7 @@ const SchedulingPreferencesForm = () => {
     if (editingRule) {
       const { error: deleteError } = await supabase.from("scheduling_rules").delete().in("id", editingRule.ids);
       if (deleteError) {
-        toast({ title: "Error", description: "No se pudo actualizar la preferencia.", variant: "destructive" });
+        toast({ title: "Error", description: "Could not update preference.", variant: "destructive" });
         return;
       }
     }
@@ -167,9 +167,9 @@ const SchedulingPreferencesForm = () => {
 
     const { error: insertError } = await supabase.from("scheduling_rules").insert(newRules);
     if (insertError) {
-      toast({ title: "Error", description: "No se pudo guardar la preferencia.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not save preference.", variant: "destructive" });
     } else {
-      toast({ title: "Éxito", description: `Preferencia ${editingRule ? 'actualizada' : 'guardada'}.` });
+      toast({ title: "Success", description: `Preference ${editingRule ? 'updated' : 'saved'}.` });
       handleCancelEdit();
       fetchFormData();
     }
@@ -179,9 +179,9 @@ const SchedulingPreferencesForm = () => {
     if (!ruleToDelete) return;
     const { error } = await supabase.from("scheduling_rules").delete().in("id", ruleToDelete.ids);
     if (error) {
-      toast({ title: "Error", description: "No se pudo eliminar la preferencia.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not delete preference.", variant: "destructive" });
     } else {
-      toast({ title: "Éxito", description: "Preferencia eliminada." });
+      toast({ title: "Success", description: "Preference deleted." });
       fetchFormData();
     }
     setRuleToDelete(null);
@@ -205,16 +205,16 @@ const SchedulingPreferencesForm = () => {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>{editingRule ? "Editar Preferencia" : "Preferencias de Programación"}</CardTitle>
+          <CardTitle>{editingRule ? "Edit Preference" : "Scheduling Preferences"}</CardTitle>
           <CardDescription>
-            {editingRule ? "Modifica la regla y haz clic en 'Actualizar Regla'." : "Crea reglas para programar clases recurrentes automáticamente."}
+            {editingRule ? "Modify the rule and click 'Update Rule'." : "Create rules to automatically schedule recurring classes."}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col md:flex-row items-end gap-4 mb-8">
               <FormField control={form.control} name="day_of_week" render={({ field }) => (
-                <FormItem className="flex-1 w-full"><FormLabel>Todos los</FormLabel>
+                <FormItem className="flex-1 w-full"><FormLabel>Every</FormLabel>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <FormControl>
@@ -224,7 +224,7 @@ const SchedulingPreferencesForm = () => {
                                 .sort(daySortFunction)
                                 .map(day => dayInitials[day] || day.charAt(0))
                                 .join(', ') 
-                            : "Seleccionar días"}
+                            : "Select days"}
                         </Button>
                       </FormControl>
                     </DropdownMenuTrigger>
@@ -249,14 +249,14 @@ const SchedulingPreferencesForm = () => {
                 </FormItem>
               )} />
               <FormField control={form.control} name="start_time" render={({ field }) => (
-                <FormItem className="flex-1 w-full"><FormLabel>a las</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Hora" /></SelectTrigger></FormControl><SelectContent>{timeSlots.map(time => <SelectItem key={time} value={time}>{time}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                <FormItem className="flex-1 w-full"><FormLabel>at</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Time" /></SelectTrigger></FormControl><SelectContent>{timeSlots.map(time => <SelectItem key={time} value={time}>{time}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="class_id" render={({ field }) => (
-                <FormItem className="flex-1 w-full"><FormLabel>clase de</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Clase" /></SelectTrigger></FormControl><SelectContent>{classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                <FormItem className="flex-1 w-full"><FormLabel>class of</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Class" /></SelectTrigger></FormControl><SelectContent>{classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
               )} />
               <div className="flex items-center gap-2 w-full md:w-auto">
-                {editingRule && (<Button type="button" variant="outline" onClick={handleCancelEdit}>Cancelar</Button>)}
-                <Button type="submit">{editingRule ? "Actualizar Regla" : "Añadir Regla"}</Button>
+                {editingRule && (<Button type="button" variant="outline" onClick={handleCancelEdit}>Cancel</Button>)}
+                <Button type="submit">{editingRule ? "Update Rule" : "Add Rule"}</Button>
               </div>
             </form>
           </Form>
@@ -264,15 +264,15 @@ const SchedulingPreferencesForm = () => {
           <Separator />
 
           <div className="mt-8">
-            <h3 className="text-lg font-medium mb-4">Reglas Actuales</h3>
-            {loading ? <p>Cargando reglas...</p> : (
+            <h3 className="text-lg font-medium mb-4">Current Rules</h3>
+            {loading ? <p>Loading rules...</p> : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Días</TableHead>
-                    <TableHead>Hora</TableHead>
-                    <TableHead>Clase</TableHead>
-                    <TableHead className="text-right">Acción</TableHead>
+                    <TableHead>Days</TableHead>
+                    <TableHead>Time</TableHead>
+                    <TableHead>Class</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -296,12 +296,12 @@ const SchedulingPreferencesForm = () => {
       <AlertDialog open={!!ruleToDelete} onOpenChange={(open) => !open && setRuleToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-            <AlertDialogDescription>Esta acción no se puede deshacer. Esto eliminará la regla para los días seleccionados.</AlertDialogDescription>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>This action cannot be undone. This will delete the rule for the selected days.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Eliminar</AlertDialogAction>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

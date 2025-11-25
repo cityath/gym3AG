@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { DateRange } from "react-day-picker";
 import { addDays, format, getDay } from "date-fns";
-import { es } from "date-fns/locale";
+import { enGB } from "date-fns/locale";
 
 const dayMapping = [
-  "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"
+  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 ];
 
 const GenerateSchedule = () => {
@@ -22,7 +22,7 @@ const GenerateSchedule = () => {
 
   const handleGenerate = async () => {
     if (!dateRange || !dateRange.from || !dateRange.to) {
-      toast({ title: "Error", description: "Por favor, selecciona un rango de fechas.", variant: "destructive" });
+      toast({ title: "Error", description: "Please select a date range.", variant: "destructive" });
       return;
     }
 
@@ -75,7 +75,7 @@ const GenerateSchedule = () => {
       }
 
       if (newSchedules.length === 0) {
-        toast({ title: "Información", description: "No se generaron nuevas clases. Puede que ya existan en el calendario para este período." });
+        toast({ title: "Information", description: "No new classes were generated. They may already exist in the calendar for this period." });
         setLoading(false);
         return;
       }
@@ -84,10 +84,10 @@ const GenerateSchedule = () => {
       const { error: insertError } = await supabase.from("schedules").insert(newSchedules);
       if (insertError) throw insertError;
 
-      toast({ title: "Éxito", description: `Se han generado ${newSchedules.length} nuevas clases en el calendario.` });
+      toast({ title: "Success", description: `${newSchedules.length} new classes have been generated in the calendar.` });
 
     } catch (error: any) {
-      toast({ title: "Error", description: "No se pudo generar la programación. " + error.message, variant: "destructive" });
+      toast({ title: "Error", description: "Could not generate the schedule. " + error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -96,9 +96,9 @@ const GenerateSchedule = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Generar Programación</CardTitle>
+        <CardTitle>Generate Schedule</CardTitle>
         <CardDescription>
-          Selecciona un rango de fechas para generar automáticamente la programación de clases basada en tus preferencias guardadas.
+          Select a date range to automatically generate the class schedule based on your saved preferences.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -108,25 +108,25 @@ const GenerateSchedule = () => {
             selected={dateRange}
             onSelect={setDateRange}
             numberOfMonths={2}
-            locale={es}
+            locale={enGB}
           />
           <div className="mt-4 text-center text-sm text-gray-600">
             {dateRange?.from ? (
               dateRange.to ? (
                 <>
-                  Seleccionado del {format(dateRange.from, "PPP", { locale: es })} al {format(dateRange.to, "PPP", { locale: es })}
+                  Selected from {format(dateRange.from, "PPP", { locale: enGB })} to {format(dateRange.to, "PPP", { locale: enGB })}
                 </>
               ) : (
-                format(dateRange.from, "PPP", { locale: es })
+                format(dateRange.from, "PPP", { locale: enGB })
               )
             ) : (
-              <span>Por favor, selecciona un rango de fechas</span>
+              <span>Please select a date range</span>
             )}
           </div>
         </div>
         <div className="flex justify-center">
           <Button onClick={handleGenerate} disabled={loading || !dateRange?.from || !dateRange?.to}>
-            {loading ? "Generando..." : "Generar Programación"}
+            {loading ? "Generating..." : "Generate Schedule"}
           </Button>
         </div>
       </CardContent>

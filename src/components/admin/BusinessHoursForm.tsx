@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-const optionalTimeFormat = z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "Formato HH:mm" }).optional().or(z.literal(''));
+const optionalTimeFormat = z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "HH:mm format" }).optional().or(z.literal(''));
 
 const daySchema = z.object({
   id: z.number(),
@@ -48,7 +48,7 @@ const BusinessHoursForm = () => {
         .order("id", { ascending: true });
 
       if (error) {
-        toast({ title: "Error", description: "No se pudo cargar el horario.", variant: "destructive" });
+        toast({ title: "Error", description: "Could not load business hours.", variant: "destructive" });
       } else if (data) {
         const formattedData = data.map(day => ({
           id: day.id,
@@ -80,9 +80,9 @@ const BusinessHoursForm = () => {
       .upsert(scheduleToSave);
 
     if (error) {
-      toast({ title: "Error", description: "No se pudo guardar el horario.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not save business hours.", variant: "destructive" });
     } else {
-      toast({ title: "Éxito", description: "Horario de trabajo actualizado." });
+      toast({ title: "Success", description: "Business hours updated." });
     }
     setLoading(false);
   };
@@ -90,16 +90,16 @@ const BusinessHoursForm = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Horario de Trabajo</CardTitle>
-        <CardDescription>Define las horas de apertura y cierre para cada día, en turno de mañana y tarde.</CardDescription>
+        <CardTitle>Business Hours</CardTitle>
+        <CardDescription>Define the opening and closing hours for each day, for morning and afternoon shifts.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="hidden md:grid md:grid-cols-5 gap-4 items-center mb-2">
               <div className="md:col-span-1"></div>
-              <div className="md:col-span-2 text-center font-medium text-sm text-gray-600">Turno Mañana (Apertura / Cierre)</div>
-              <div className="md:col-span-2 text-center font-medium text-sm text-gray-600">Turno Tarde (Apertura / Cierre)</div>
+              <div className="md:col-span-2 text-center font-medium text-sm text-gray-600">Morning Shift (Open / Close)</div>
+              <div className="md:col-span-2 text-center font-medium text-sm text-gray-600">Afternoon Shift (Open / Close)</div>
             </div>
             <div className="space-y-4">
               {fields.map((field, index) => (
@@ -154,7 +154,7 @@ const BusinessHoursForm = () => {
             </div>
             <div className="flex justify-end">
               <Button type="submit" disabled={loading}>
-                {loading ? "Guardando..." : "Guardar Horario"}
+                {loading ? "Saving..." : "Save Hours"}
               </Button>
             </div>
           </form>

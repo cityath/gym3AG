@@ -17,7 +17,7 @@ const Profile = () => {
       <ProfileForm />
       <div className="text-center">
         <Button variant="outline" onClick={handleSignOut}>
-          Cerrar sesión
+          Sign Out
         </Button>
       </div>
     </div>

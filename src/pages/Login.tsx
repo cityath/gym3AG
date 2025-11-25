@@ -17,7 +17,7 @@ const Login = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen w-full">
-        <p>Cargando...</p>
+        <p>Loading...</p>
       </div>
     );
   }

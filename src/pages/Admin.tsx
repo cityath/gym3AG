@@ -28,7 +28,7 @@ const AdminSidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
     <>
       <div className="p-4 border-b">
         <h2 className="text-lg font-semibold text-gray-900">
-          {profile?.role === 'admin' ? 'Administración' : 'Panel de Instructor'}
+          {profile?.role === 'admin' ? 'Administration' : 'Instructor Panel'}
         </h2>
       </div>
       <nav className="flex-1 p-4 space-y-2">
@@ -39,19 +39,19 @@ const AdminSidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
         {profile?.role === 'admin' && (
           <NavLink to="/admin/users" className={getNavLinkClass} onClick={handleLinkClick}>
             <Users className="mr-3 h-5 w-5" />
-            <span>Usuarios</span>
+            <span>Users</span>
           </NavLink>
         )}
         <NavLink to="/admin/classes" className={getNavLinkClass} onClick={handleLinkClick}>
           <LayoutDashboard className="mr-3 h-5 w-5" />
-          <span>Clases</span>
+          <span>Classes</span>
         </NavLink>
         <Collapsible open={isScheduleOpen} onOpenChange={setIsScheduleOpen} className="space-y-1">
           <CollapsibleTrigger className="w-full">
             <div className={cn(baseLinkClass, inactiveLinkClass, "justify-between w-full")}>
               <div className="flex items-center">
                 <Calendar className="mr-3 h-5 w-5" />
-                <span>Programación</span>
+                <span>Scheduling</span>
               </div>
               {isScheduleOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
             </div>
@@ -59,26 +59,26 @@ const AdminSidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
           <CollapsibleContent className="pl-6 space-y-1">
              <NavLink to="/admin/schedule/weekly" className={getNavLinkClass} onClick={handleLinkClick}>
               <span className="mr-3 h-5 w-5" />
-              <span>Calendario Semanal</span>
+              <span>Weekly Calendar</span>
             </NavLink>
             <NavLink to="/admin/schedule/monthly" className={getNavLinkClass} onClick={handleLinkClick}>
               <span className="mr-3 h-5 w-5" />
-              <span>Calendario Mensual</span>
+              <span>Monthly Calendar</span>
             </NavLink>
              <NavLink to="/admin/schedule/preferences" className={getNavLinkClass} onClick={handleLinkClick}>
                <span className="mr-3 h-5 w-5" />
-              <span>Preferencias</span>
+              <span>Preferences</span>
             </NavLink>
             <NavLink to="/admin/schedule/generate" className={getNavLinkClass} onClick={handleLinkClick}>
                <span className="mr-3 h-5 w-5" />
-              <span>Generar Programación</span>
+              <span>Generate Schedule</span>
             </NavLink>
           </CollapsibleContent>
         </Collapsible>
         {profile?.role === 'admin' && (
           <NavLink to="/admin/settings" className={getNavLinkClass} onClick={handleLinkClick}>
             <Settings className="mr-3 h-5 w-5" />
-            <span>Configuración</span>
+            <span>Settings</span>
           </NavLink>
         )}
       </nav>
@@ -99,12 +99,12 @@ const Admin = () => {
       <div className="flex flex-col flex-1">
         {/* Mobile Header */}
         <header className="md:hidden flex items-center justify-between p-4 border-b bg-white sticky top-0 z-10">
-          <h2 className="text-lg font-semibold">Panel Admin</h2>
+          <h2 className="text-lg font-semibold">Admin Panel</h2>
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="outline" size="icon">
                 <Menu className="h-6 w-6" />
-                <span className="sr-only">Abrir menú</span>
+                <span className="sr-only">Open menu</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="p-0 w-72">

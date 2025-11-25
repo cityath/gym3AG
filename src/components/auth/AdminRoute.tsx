@@ -7,7 +7,7 @@ const AdminRoute = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full w-full">
-        <p>Verificando acceso...</p>
+        <p>Verifying access...</p>
       </div>
     );
   }

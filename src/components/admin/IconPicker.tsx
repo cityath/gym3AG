@@ -28,7 +28,7 @@ export const IconPicker = ({ value, onChange }: IconPickerProps) => {
               <span>{value}</span>
             </div>
           ) : (
-            <span>Seleccionar icono</span>
+            <span>Select icon</span>
           )}
         </Button>
       </PopoverTrigger>
