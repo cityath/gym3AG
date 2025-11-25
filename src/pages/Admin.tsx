@@ -31,6 +31,9 @@ const AdminSidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
         <h2 className="text-lg font-semibold text-gray-900">
           {profile?.role === 'admin' ? 'Administration' : 'Instructor Panel'}
         </h2>
+        {profile?.role === 'admin' && (
+          <p className="text-xs text-gray-500 mt-1">Optimized for PC and Tablets</p>
+        )}
       </div>
       <nav className="flex-1 p-4 space-y-2">
         <NavLink to="/admin/booking-dashboard" className={getNavLinkClass} onClick={handleLinkClick}>
