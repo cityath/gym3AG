@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Clock, Users } from "lucide-react";
+import { Clock, Users } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -235,7 +235,6 @@ const Dashboard = () => {
                         <CardDescription>{cls.instructor}</CardDescription>
                       </CardHeader>
                       <CardContent className="flex-grow space-y-3">
-                        <div className="flex items-center text-sm text-gray-600"><Calendar className="mr-2 h-4 w-4" />{format(new Date(cls.start_time), 'PPP', { locale: enGB })}</div>
                         <div className="flex items-center text-sm text-gray-600"><Clock className="mr-2 h-4 w-4" />{format(new Date(cls.start_time), 'p', { locale: enGB })} ({cls.duration} min)</div>
                         <div className="flex items-center text-sm text-gray-600"><Users className="mr-2 h-4 w-4" />Available: {availableSpots} of {cls.capacity}</div>
                       </CardContent>
