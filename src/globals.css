@@ -103,23 +103,9 @@
 @layer components {
   .rbc-non-work-slot {
     @apply bg-gray-100;
-    background-image: repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 5px,
-      theme('colors.gray.200') 5px,
-      theme('colors.gray.200') 10px
-    );
   }
 
   .dark .rbc-non-work-slot {
     @apply bg-gray-800;
-     background-image: repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 5px,
-      theme('colors.gray.700') 5px,
-      theme('colors.gray.700') 10px
-    );
   }
 }

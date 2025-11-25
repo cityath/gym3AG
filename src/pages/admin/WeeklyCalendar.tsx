@@ -36,9 +36,22 @@ interface ScheduleEvent {
   };
 }
 
+interface BusinessHours {
+  day_of_week: string;
+  morning_open_time: string | null;
+  morning_close_time: string | null;
+  afternoon_open_time: string | null;
+  afternoon_close_time: string | null;
+}
+
+const dayMapping = [
+  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+];
+
 const WeeklyCalendar = () => {
   const [events, setEvents] = useState<ScheduleEvent[]>([]);
   const [classes, setClasses] = useState<Class[]>([]);
+  const [businessHours, setBusinessHours] = useState<BusinessHours[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -56,12 +69,14 @@ const WeeklyCalendar = () => {
       ] = await Promise.all([
         supabase.from("classes").select("id, name, duration"),
         supabase.from("schedules").select(`id, start_time, end_time, classes (id, name, type, background_color)`),
-        supabase.from("business_hours").select("morning_open_time, morning_close_time, afternoon_open_time, afternoon_close_time")
+        supabase.from("business_hours").select("day_of_week, morning_open_time, morning_close_time, afternoon_open_time, afternoon_close_time")
       ]);
 
       if (classesError) throw classesError;
       if (schedulesError) throw schedulesError;
       if (hoursError) throw hoursError;
+
+      setBusinessHours(hoursData || []);
 
       if (hoursData && hoursData.length > 0) {
         const allTimes = hoursData.flatMap(h => [
@@ -186,13 +201,56 @@ const WeeklyCalendar = () => {
     };
   }, []);
 
+  const slotPropGetter = useCallback((date: Date) => {
+    const dayOfWeek = dayMapping[date.getDay()];
+    const dayHours = businessHours.find(h => h.day_of_week === dayOfWeek);
+
+    if (!dayHours) {
+      return { className: 'rbc-non-work-slot' };
+    }
+
+    const toTimeValue = (d: Date) => d.getHours() + d.getMinutes() / 60;
+    const slotTimeValue = toTimeValue(date);
+
+    const parseTimeValue = (timeString: string | null): number | null => {
+      if (!timeString) return null;
+      const parts = timeString.split(':');
+      if (parts.length < 2) return null;
+      const hours = parseInt(parts[0], 10);
+      const minutes = parseInt(parts[1], 10);
+      if (isNaN(hours) || isNaN(minutes)) return null;
+      return hours + minutes / 60;
+    };
+
+    const morningOpen = parseTimeValue(dayHours.morning_open_time);
+    const morningClose = parseTimeValue(dayHours.morning_close_time);
+    const afternoonOpen = parseTimeValue(dayHours.afternoon_open_time);
+    const afternoonClose = parseTimeValue(dayHours.afternoon_close_time);
+
+    let isWorkHour = false;
+
+    if (morningOpen !== null && morningClose !== null) {
+      if (slotTimeValue >= morningOpen && slotTimeValue < morningClose) {
+        isWorkHour = true;
+      }
+    }
+
+    if (afternoonOpen !== null && afternoonClose !== null) {
+      if (slotTimeValue >= afternoonOpen && slotTimeValue < afternoonClose) {
+        isWorkHour = true;
+      }
+    }
+
+    return isWorkHour ? {} : { className: 'rbc-non-work-slot' };
+  }, [businessHours]);
+
   return (
     <>
       <Card>
         <CardHeader>
           <CardTitle>Weekly Schedule</CardTitle>
           <CardDescription>
-            Click on a time slot to add a class or on an existing class to edit it.
+            Click on a time slot to add a class or on an existing class to edit it. Non-working hours appear in grey.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -209,6 +267,7 @@ const WeeklyCalendar = () => {
                 onSelectSlot={handleSelectSlot}
                 onSelectEvent={handleSelectEvent}
                 eventPropGetter={eventStyleGetter}
+                slotPropGetter={slotPropGetter}
                 culture="en-GB"
                 min={timeRange?.min}
                 max={timeRange?.max}
