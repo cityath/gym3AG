@@ -43,26 +43,32 @@ const UserForm = ({ isOpen, onClose, onSave, user }: UserFormProps) => {
   });
 
   useEffect(() => {
-    if (user) {
-      form.reset({
-        first_name: user.first_name,
-        last_name: user.last_name,
-        role: user.role,
-        phone: user.phone || "",
-        avatar_url: user.avatar_url || "",
-      });
-    } else {
-      form.reset({
-        first_name: "",
-        last_name: "",
-        email: "",
-        password: "",
-        role: "user",
-        phone: "",
-        avatar_url: "",
-      });
+    // Reset the form every time the dialog opens
+    if (isOpen) {
+      if (user) {
+        // Editing mode: set values from user prop
+        form.reset({
+          first_name: user.first_name,
+          last_name: user.last_name,
+          role: user.role,
+          phone: user.phone || "",
+          avatar_url: user.avatar_url || "",
+          password: "", // Clear password field for editing
+        });
+      } else {
+        // Create mode: reset to default empty values
+        form.reset({
+          first_name: "",
+          last_name: "",
+          email: "",
+          password: "",
+          role: "user",
+          phone: "",
+          avatar_url: "",
+        });
+      }
     }
-  }, [user, form, isEditing]);
+  }, [user, isOpen, form]);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     onSave(values, user?.id);
