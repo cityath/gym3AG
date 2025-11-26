@@ -57,27 +57,9 @@ const Dashboard = () => {
       today.setHours(0, 0, 0, 0);
 
       const { data: schedules, error: schedulesError } = await supabase
-        .from('schedules')
-        .select(`
-          id,
-          start_time,
-          end_time,
-          classes (
-            id,
-            name,
-            type,
-            instructor,
-            duration,
-            capacity,
-            icon,
-            background_color
-          ),
-          bookings (
-            count
-          )
-        `)
-        .gte('start_time', today.toISOString())
-        .order('start_time', { ascending: true });
+        .rpc('get_schedules_with_booking_counts', {
+          start_date: today.toISOString()
+        });
 
       if (schedulesError) throw schedulesError;
 
@@ -92,15 +74,15 @@ const Dashboard = () => {
 
       const formattedClasses = schedules.map((schedule: any) => ({
         id: schedule.id,
-        name: schedule.classes.name,
-        type: schedule.classes.type,
-        instructor: schedule.classes.instructor,
-        duration: schedule.classes.duration,
-        capacity: schedule.classes.capacity,
-        icon: schedule.classes.icon,
-        background_color: schedule.classes.background_color,
+        name: schedule.class_name,
+        type: schedule.class_type,
+        instructor: schedule.instructor,
+        duration: schedule.duration,
+        capacity: schedule.capacity,
+        icon: schedule.icon,
+        background_color: schedule.background_color,
         start_time: schedule.start_time,
-        booked_spots: schedule.bookings[0]?.count || 0,
+        booked_spots: schedule.booked_spots,
         isBookedByUser: userBookedScheduleIds.has(schedule.id),
       }));
 
