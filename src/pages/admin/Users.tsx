@@ -4,7 +4,7 @@ import { Profile } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { showSuccess, showError } from "@/utils/toast";
 import { PlusCircle, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -18,7 +18,6 @@ export interface UserDetails extends Profile {
 const UserManagement = () => {
   const [users, setUsers] = useState<UserDetails[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserDetails | null>(null);
@@ -31,11 +30,7 @@ const UserManagement = () => {
       .order("last_name", { ascending: true });
 
     if (error) {
-      toast({
-        title: "Error",
-        description: "Could not load users.",
-        variant: "destructive",
-      });
+      showError("Could not load users.");
     } else {
       setUsers(data as UserDetails[] || []);
     }
@@ -73,18 +68,11 @@ const UserManagement = () => {
 
       if (error) throw new Error(error.message);
 
-      toast({
-        title: "Success",
-        description: `User ${id ? 'updated' : 'created'} successfully.`,
-      });
+      showSuccess(`User ${id ? 'updated' : 'created'} successfully.`);
       fetchUsers();
       setIsDialogOpen(false);
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      showError(error.message);
     }
   };
 
@@ -96,17 +84,10 @@ const UserManagement = () => {
       });
       if (error) throw new Error(error.message);
 
-      toast({
-        title: "Success",
-        description: "User deleted successfully.",
-      });
+      showSuccess("User deleted successfully.");
       fetchUsers();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      showError(error.message);
     } finally {
       setIsAlertOpen(false);
       setSelectedUser(null);

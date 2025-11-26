@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Clock, Users } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
-import { useToast } from "@/hooks/use-toast";
+import { showSuccess, showError } from "@/utils/toast";
 import { supabase } from "@/integrations/supabase/client";
 import DynamicIcon from "@/components/ui/dynamic-icon";
 import { format } from "date-fns";
@@ -30,7 +30,6 @@ interface Class {
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [classes, setClasses] = useState<Class[]>([]);
   const [filteredClasses, setFilteredClasses] = useState<Class[]>([]);
   const [groupedClasses, setGroupedClasses] = useState<Record<string, Class[]>>({});
@@ -114,11 +113,7 @@ const Dashboard = () => {
       setClassTypes(uniqueTypes.sort());
 
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Could not load classes",
-        variant: "destructive",
-      });
+      showError("Could not load classes");
     } finally {
       setLoading(false);
     }
@@ -154,17 +149,10 @@ const Dashboard = () => {
         throw new Error(errorData.error || 'Could not make the booking.');
       }
 
-      toast({
-        title: "Booking confirmed!",
-        description: "Your spot has been successfully booked.",
-      });
+      showSuccess("Booking confirmed! Your spot has been successfully booked.");
       fetchClasses();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      showError(error.message);
     } finally {
       setBookingLoading(false);
       setClassToBook(null);

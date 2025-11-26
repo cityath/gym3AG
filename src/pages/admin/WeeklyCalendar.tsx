@@ -3,7 +3,7 @@ import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { enGB } from 'date-fns/locale';
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { showSuccess, showError } from "@/utils/toast";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import ScheduleForm from "@/components/admin/ScheduleForm";
 
@@ -40,7 +40,6 @@ const WeeklyCalendar = () => {
   const [events, setEvents] = useState<ScheduleEvent[]>([]);
   const [classes, setClasses] = useState<Class[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<ScheduleEvent | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<{ start: Date, end: Date } | null>(null);
@@ -105,11 +104,11 @@ const WeeklyCalendar = () => {
       setEvents(formattedEvents);
 
     } catch (error: any) {
-      toast({ title: "Error", description: "Could not load the schedule.", variant: "destructive" });
+      showError("Could not load the schedule.");
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, []);
 
   useEffect(() => {
     fetchSchedulesAndClasses();
@@ -152,9 +151,9 @@ const WeeklyCalendar = () => {
     }
 
     if (error) {
-      toast({ title: "Error", description: "Could not save the scheduled class.", variant: "destructive" });
+      showError("Could not save the scheduled class.");
     } else {
-      toast({ title: "Success", description: "Schedule saved successfully." });
+      showSuccess("Schedule saved successfully.");
       fetchSchedulesAndClasses();
     }
     handleCloseDialog();
@@ -163,9 +162,9 @@ const WeeklyCalendar = () => {
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from("schedules").delete().eq("id", id);
     if (error) {
-      toast({ title: "Error", description: "Could not delete the scheduled class.", variant: "destructive" });
+      showError("Could not delete the scheduled class.");
     } else {
-      toast({ title: "Success", description: "Scheduled class deleted." });
+      showSuccess("Scheduled class deleted.");
       fetchSchedulesAndClasses();
     }
     handleCloseDialog();

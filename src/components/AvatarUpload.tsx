@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { showSuccess, showError } from '@/utils/toast';
 import { User, Pencil } from 'lucide-react';
 
 interface AvatarUploadProps {
@@ -14,7 +14,6 @@ interface AvatarUploadProps {
 
 export const AvatarUpload = ({ url, onUpload, userId }: AvatarUploadProps) => {
   const { user: authUser } = useAuth();
-  const { toast } = useToast();
   const [avatarUrl, setAvatarUrl] = useState<string | null | undefined>(url);
   const [uploading, setUploading] = useState(false);
 
@@ -47,10 +46,10 @@ export const AvatarUpload = ({ url, onUpload, userId }: AvatarUploadProps) => {
       
       onUpload(publicUrl);
       setAvatarUrl(publicUrl);
-      toast({ title: 'Success', description: 'Avatar updated.' });
+      showSuccess('Avatar updated.');
 
     } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      showError(error.message);
     } finally {
       setUploading(false);
     }

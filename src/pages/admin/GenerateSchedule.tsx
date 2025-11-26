@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { showSuccess, showError, showInfo } from "@/utils/toast";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -13,7 +13,6 @@ const dayMapping = [
 ];
 
 const GenerateSchedule = () => {
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: new Date(),
@@ -22,7 +21,7 @@ const GenerateSchedule = () => {
 
   const handleGenerate = async () => {
     if (!dateRange || !dateRange.from || !dateRange.to) {
-      toast({ title: "Error", description: "Please select a date range.", variant: "destructive" });
+      showError("Please select a date range.");
       return;
     }
 
@@ -75,7 +74,7 @@ const GenerateSchedule = () => {
       }
 
       if (newSchedules.length === 0) {
-        toast({ title: "Information", description: "No new classes were generated. They may already exist in the calendar for this period." });
+        showInfo("No new classes were generated. They may already exist in the calendar for this period.");
         setLoading(false);
         return;
       }
@@ -84,10 +83,10 @@ const GenerateSchedule = () => {
       const { error: insertError } = await supabase.from("schedules").insert(newSchedules);
       if (insertError) throw insertError;
 
-      toast({ title: "Success", description: `${newSchedules.length} new classes have been generated in the calendar.` });
+      showSuccess(`${newSchedules.length} new classes have been generated in the calendar.`);
 
     } catch (error: any) {
-      toast({ title: "Error", description: "Could not generate the schedule. " + error.message, variant: "destructive" });
+      showError("Could not generate the schedule. " + error.message);
     } finally {
       setLoading(false);
     }

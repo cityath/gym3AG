@@ -6,7 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -19,6 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { translateSupabaseError } from "@/utils/errors";
+import { showSuccess, showError } from "@/utils/toast";
 
 interface AuthFormProps {
   isSignUp?: boolean;
@@ -43,7 +43,6 @@ const signInSchema = z.object({
 const AuthForm = ({ isSignUp = false }: AuthFormProps) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const formSchema = isSignUp ? signUpSchema : signInSchema;
 
@@ -72,10 +71,7 @@ const AuthForm = ({ isSignUp = false }: AuthFormProps) => {
 
         if (error) throw error;
 
-        toast({
-          title: "Registration successful!",
-          description: "We've sent you a confirmation email. Please check your inbox.",
-        });
+        showSuccess("Registration successful! Please check your inbox for a confirmation email.");
         
         navigate("/login");
 
@@ -87,19 +83,12 @@ const AuthForm = ({ isSignUp = false }: AuthFormProps) => {
 
         if (error) throw error;
 
-        toast({
-          title: "Sign-in successful!",
-          description: "Welcome back.",
-        });
+        showSuccess("Sign-in successful! Welcome back.");
 
         navigate("/dashboard");
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: translateSupabaseError(error.message),
-        variant: "destructive",
-      });
+      showError(translateSupabaseError(error.message));
     } finally {
       setLoading(false);
     }

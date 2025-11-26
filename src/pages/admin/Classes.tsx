@@ -6,7 +6,7 @@ import * as z from "zod";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { showSuccess, showError } from "@/utils/toast";
 import { PlusCircle, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -53,7 +53,6 @@ const ClassManagement = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<Class | null>(null);
-  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof classSchema>>({
     resolver: zodResolver(classSchema),
@@ -92,7 +91,7 @@ const ClassManagement = () => {
         setInstructors(formattedInstructors);
       }
     } catch (error: any) {
-      toast({ title: "Error", description: "Could not load data. " + error.message, variant: "destructive" });
+      showError("Could not load data. " + error.message);
     } finally {
       setLoading(false);
     }
@@ -121,9 +120,9 @@ const ClassManagement = () => {
     if (!selectedClass) return;
     const { error } = await supabase.from("classes").delete().eq("id", selectedClass.id);
     if (error) {
-      toast({ title: "Error", description: "Could not delete class.", variant: "destructive" });
+      showError("Could not delete class.");
     } else {
-      toast({ title: "Success", description: "Class deleted successfully." });
+      showSuccess("Class deleted successfully.");
       fetchData();
     }
     setIsAlertOpen(false);
@@ -134,16 +133,16 @@ const ClassManagement = () => {
     if (selectedClass) { // Update
       const { error } = await supabase.from("classes").update(values).eq("id", selectedClass.id);
       if (error) {
-        toast({ title: "Error", description: "Could not update class.", variant: "destructive" });
+        showError("Could not update class.");
       } else {
-        toast({ title: "Success", description: "Class updated successfully." });
+        showSuccess("Class updated successfully.");
       }
     } else { // Create
       const { error } = await supabase.from("classes").insert([values]);
       if (error) {
-        toast({ title: "Error", description: "Could not create class.", variant: "destructive" });
+        showError("Could not create class.");
       } else {
-        toast({ title: "Success", description: "Class created successfully." });
+        showSuccess("Class created successfully.");
       }
     }
     fetchData();

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { showSuccess, showError } from "@/utils/toast";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -39,7 +39,6 @@ interface Booking {
 
 const MyBookings = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [groupedBookings, setGroupedBookings] = useState<Record<string, Booking[]>>({});
   const [loading, setLoading] = useState(true);
@@ -73,7 +72,7 @@ const MyBookings = () => {
       if (error) throw error;
       setBookings(data as Booking[] || []);
     } catch (error: any) {
-      toast({ title: "Error", description: "Could not load your bookings.", variant: "destructive" });
+      showError("Could not load your bookings.");
     } finally {
       setLoading(false);
     }
@@ -104,10 +103,10 @@ const MyBookings = () => {
       });
       if (error) throw new Error("Could not cancel the booking.");
       
-      toast({ title: "Success", description: "Booking cancelled successfully." });
+      showSuccess("Booking cancelled successfully.");
       fetchBookings(); // Refresh the list
     } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      showError(error.message);
     } finally {
       setCancelLoading(false);
       setBookingToCancel(null);

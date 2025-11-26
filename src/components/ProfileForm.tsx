@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { showSuccess, showError } from "@/utils/toast";
 import { useState } from "react";
 import { AvatarUpload } from "./AvatarUpload";
 
@@ -22,7 +22,6 @@ const profileSchema = z.object({
 
 const ProfileForm = () => {
   const { user, profile, refreshProfile } = useAuth();
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
   const form = useForm<z.infer<typeof profileSchema>>({
@@ -45,9 +44,9 @@ const ProfileForm = () => {
       .eq("id", user.id);
 
     if (error) {
-      toast({ title: "Error", description: "Could not update your profile.", variant: "destructive" });
+      showError("Could not update your profile.");
     } else {
-      toast({ title: "Success", description: "Your profile has been updated." });
+      showSuccess("Your profile has been updated.");
       await refreshProfile();
     }
     setLoading(false);
