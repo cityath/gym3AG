@@ -93,31 +93,27 @@ const Dashboard = () => {
       setCurrentUserPackage(currentUserPackageData);
       setNextMonthUserPackage(nextMonthUserPackageData);
       if (currentUserPackageData) {
-        const usedCreditsMap: Record<string, number> = {};
-        currentUserPackageData.packages.package_items.forEach((item: any) => {
-          usedCreditsMap[item.class_type] = 0;
-        });
-
-        (monthBookings || []).forEach(booking => {
-          const bookingType = (booking.classes as any)?.type;
-          if (!bookingType) return;
-          const bookingTypeLower = bookingType.toLowerCase();
-
-          const correspondingPackageItem = currentUserPackageData.packages.package_items.find((item: any) => {
-            const packageItemTypeLower = item.class_type.toLowerCase();
-            return bookingTypeLower.includes(packageItemTypeLower) || packageItemTypeLower.includes(bookingTypeLower);
-          });
-
-          if (correspondingPackageItem) {
-            usedCreditsMap[correspondingPackageItem.class_type] += 1;
-          }
-        });
-
         const finalRemainingCredits: Record<string, number> = {};
-        currentUserPackageData.packages.package_items.forEach((item: any) => {
-          finalRemainingCredits[item.class_type] = item.credits - (usedCreditsMap[item.class_type] || 0);
+
+        // For each item in the user's package (e.g., "Spinning", "Yoga")
+        currentUserPackageData.packages.package_items.forEach((packageItem: any) => {
+          const packageItemTypeLower = packageItem.class_type.toLowerCase();
+          
+          // Count how many of this month's bookings match this package item type
+          const usedCreditsCount = (monthBookings || []).filter(booking => {
+            const bookingType = (booking.classes as any)?.type;
+            if (!bookingType) return false;
+            
+            const bookingTypeLower = bookingType.toLowerCase();
+            
+            // Use a flexible match (e.g., package "Spinning" matches class "Spinning Avanzado")
+            return bookingTypeLower.includes(packageItemTypeLower) || packageItemTypeLower.includes(bookingTypeLower);
+          }).length;
+
+          // Calculate remaining credits and store it
+          finalRemainingCredits[packageItem.class_type] = packageItem.credits - usedCreditsCount;
         });
-        
+
         setRemainingCredits(finalRemainingCredits);
       } else {
         setRemainingCredits({});
