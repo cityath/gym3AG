@@ -8,7 +8,7 @@ import { MadeWithDyad } from "@/components/made-with-dyad";
 import { showSuccess, showError } from "@/utils/toast";
 import { supabase } from "@/integrations/supabase/client";
 import DynamicIcon from "@/components/ui/dynamic-icon";
-import { format, startOfMonth, endOfMonth } from "date-fns";
+import { format } from "date-fns";
 import { enGB } from "date-fns/locale";
 import BookingConfirmationDialog from "@/components/BookingConfirmationDialog";
 import { Switch } from "@/components/ui/switch";
@@ -38,7 +38,7 @@ const Dashboard = () => {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [classToBook, setClassToBook] = useState<Class | null>(null);
   const [onlyBonus, setOnlyBonus] = useState(false);
-  const [userCredits, setUserCredits] = useState<Record<string, { remaining: number }>>({});
+  const [coveredClassTypes, setCoveredClassTypes] = useState<string[]>([]);
 
   useEffect(() => {
     if (!user) {
@@ -71,53 +71,22 @@ const Dashboard = () => {
 
       const userBookedScheduleIds = new Set(userBookings.map(b => b.schedule_id));
 
-      // Fetch user's current package and calculate remaining credits
-      const currentMonthStart = startOfMonth(today);
-      const currentMonthEnd = endOfMonth(today);
-
-      const { data: userPackageData, error: userPackageError } = await supabase
+      // Fetch all current and future user packages to determine covered class types for the filter
+      const { data: allUserPackages, error: allPackagesError } = await supabase
         .from('user_packages')
-        .select('*, packages(*, package_items(*))')
+        .select('packages(package_items(class_type))')
         .eq('user_id', user.id)
-        .gte('valid_from', format(currentMonthStart, 'yyyy-MM-dd'))
-        .lte('valid_until', format(currentMonthEnd, 'yyyy-MM-dd'))
-        .single();
-      
-      if (userPackageError && userPackageError.code !== 'PGRST116') throw userPackageError;
+        .gte('valid_until', format(today, 'yyyy-MM-dd'));
 
-      const creditsInfo: Record<string, { remaining: number }> = {};
-      if (userPackageData) {
-        const { data: monthBookings, error: monthBookingsError } = await supabase
-          .from('bookings')
-          .select('classes(type)')
-          .eq('user_id', user.id)
-          .gte('booking_date', currentMonthStart.toISOString())
-          .lte('booking_date', currentMonthEnd.toISOString());
-        
-        if (monthBookingsError) throw monthBookingsError;
+      if (allPackagesError) throw allPackagesError;
 
-        const packageClassTypes = userPackageData.packages.package_items.map(item => item.class_type.toLowerCase());
-
-        const usedCredits: Record<string, number> = (monthBookings || []).reduce((acc, booking) => {
-            const bookingType = (booking.classes as any)?.type;
-            if (bookingType) {
-                const bookingTypeLower = bookingType.toLowerCase();
-                const packageTypeKey = packageClassTypes.find(pKey => bookingTypeLower.includes(pKey) || pKey.includes(bookingTypeLower));
-                if (packageTypeKey) {
-                    acc[packageTypeKey] = (acc[packageTypeKey] || 0) + 1;
-                }
-            }
-            return acc;
-        }, {});
-
-        userPackageData.packages.package_items.forEach(item => {
-            const key = item.class_type.toLowerCase();
-            creditsInfo[key] = {
-                remaining: item.credits - (usedCredits[key] || 0)
-            };
+      const coveredTypes = new Set<string>();
+      allUserPackages?.forEach((up: any) => {
+        up.packages.package_items.forEach((item: any) => {
+            coveredTypes.add(item.class_type.toLowerCase());
         });
-      }
-      setUserCredits(creditsInfo);
+      });
+      setCoveredClassTypes(Array.from(coveredTypes));
 
       const formattedClasses = schedules.map((schedule: any) => ({
         id: schedule.id,
@@ -149,11 +118,10 @@ const Dashboard = () => {
         result = result.filter(cls => {
             if (!cls.type) return false;
             const classTypeLower = cls.type.toLowerCase();
-            const creditKey = Object.keys(userCredits).find(key => classTypeLower.includes(key) || key.includes(classTypeLower));
-            if (!creditKey) return false;
-            
-            const creditInfo = userCredits[creditKey];
-            return creditInfo && creditInfo.remaining > 0;
+            // Check if the class type is covered by any of the user's packages (current or future)
+            return coveredClassTypes.some(coveredType => 
+                classTypeLower.includes(coveredType) || coveredType.includes(classTypeLower)
+            );
         });
     }
 
@@ -169,7 +137,7 @@ const Dashboard = () => {
     }, {} as Record<string, Class[]>);
     setGroupedClasses(grouped);
 
-  }, [onlyBonus, userCredits, classes]);
+  }, [onlyBonus, classes, coveredClassTypes]);
 
   const handleBookClass = async (scheduleId: string) => {
     setBookingLoading(true);
