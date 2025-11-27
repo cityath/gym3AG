@@ -8,7 +8,7 @@ import { MadeWithDyad } from "@/components/made-with-dyad";
 import { showSuccess, showError } from "@/utils/toast";
 import { supabase } from "@/integrations/supabase/client";
 import DynamicIcon from "@/components/ui/dynamic-icon";
-import { format, startOfMonth, endOfMonth, addMonths } from "date-fns";
+import { format } from "date-fns";
 import { enGB } from "date-fns/locale";
 import BookingConfirmationDialog from "@/components/BookingConfirmationDialog";
 import { Switch } from "@/components/ui/switch";
@@ -39,120 +39,120 @@ const Dashboard = () => {
   const [classToBook, setClassToBook] = useState<Class | null>(null);
   const [onlyBonus, setOnlyBonus] = useState(false);
   const [coveredClassTypes, setCoveredClassTypes] = useState<string[]>([]);
-  const [currentUserPackage, setCurrentUserPackage] = useState<any>(null);
-  const [nextMonthUserPackage, setNextMonthUserPackage] = useState<any>(null);
-  const [remainingCredits, setRemainingCredits] = useState<Record<string, number>>({});
 
-  const fetchClassesAndPackages = async () => {
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+    } else {
+      fetchClasses();
+    }
+  }, [user, navigate]);
+
+  const fetchClasses = async () => {
     if (!user) return;
     setLoading(true);
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const currentMonthStart = startOfMonth(today);
-      const currentMonthEnd = endOfMonth(today);
-      const nextMonth = addMonths(today, 1);
-      const nextMonthStart = startOfMonth(nextMonth);
 
-      const [
-        { data: schedules, error: schedulesError },
-        { data: userBookings, error: bookingsError },
-        { data: allUserPackages, error: allPackagesError },
-        { data: monthBookings, error: monthBookingsError }
-      ] = await Promise.all([
-        supabase.rpc('get_schedules_with_booking_counts', { start_date: today.toISOString() }),
-        supabase.from('bookings').select('schedule_id').eq('user_id', user.id),
-        supabase.from('user_packages').select('*, packages(*, package_items(*))').eq('user_id', user.id).gte('valid_until', format(today, 'yyyy-MM-dd')),
-        supabase.from('bookings').select('classes(type)').eq('user_id', user.id).gte('booking_date', currentMonthStart.toISOString()).lte('booking_date', currentMonthEnd.toISOString())
-      ]);
+      const { data: schedules, error: schedulesError } = await supabase
+        .rpc('get_schedules_with_booking_counts', {
+          start_date: today.toISOString()
+        });
 
       if (schedulesError) throw schedulesError;
+
+      const { data: userBookings, error: bookingsError } = await supabase
+        .from('bookings')
+        .select('schedule_id')
+        .eq('user_id', user.id);
+
       if (bookingsError) throw bookingsError;
-      if (allPackagesError) throw allPackagesError;
-      if (monthBookingsError) throw monthBookingsError;
 
-      // Process packages
-      const currentPackage = allUserPackages.find(p => new Date(p.valid_from + 'T00:00:00').getMonth() === currentMonthStart.getMonth()) || null;
-      const nextPackage = allUserPackages.find(p => new Date(p.valid_from + 'T00:00:00').getMonth() === nextMonthStart.getMonth()) || null;
-      setCurrentUserPackage(currentPackage);
-      setNextMonthUserPackage(nextPackage);
-
-      // Calculate remaining credits for current month
-      if (currentPackage) {
-        const creditsInfo = {} as Record<string, number>;
-        currentPackage.packages.package_items.forEach((item: any) => {
-          const packageItemTypeLower = item.class_type.toLowerCase();
-          const used = (monthBookings || []).filter(booking => {
-            const bookingType = (booking.classes as any)?.type;
-            if (!bookingType) return false;
-            const bookingTypeLower = bookingType.toLowerCase();
-            return bookingTypeLower.includes(packageItemTypeLower) || packageItemTypeLower.includes(bookingTypeLower);
-          }).length;
-          creditsInfo[item.class_type] = item.credits - used;
-        });
-        setRemainingCredits(creditsInfo);
-      } else {
-        setRemainingCredits({});
-      }
-
-      // Process classes for display
       const userBookedScheduleIds = new Set(userBookings.map(b => b.schedule_id));
+
+      // Fetch all current and future user packages to determine covered class types for the filter
+      const { data: allUserPackages, error: allPackagesError } = await supabase
+        .from('user_packages')
+        .select('packages(package_items(class_type))')
+        .eq('user_id', user.id)
+        .gte('valid_until', format(today, 'yyyy-MM-dd'));
+
+      if (allPackagesError) throw allPackagesError;
+
       const coveredTypes = new Set<string>();
-      allUserPackages?.forEach((up: any) => up.packages.package_items.forEach((item: any) => coveredTypes.add(item.class_type.toLowerCase())));
+      allUserPackages?.forEach((up: any) => {
+        up.packages.package_items.forEach((item: any) => {
+            coveredTypes.add(item.class_type.toLowerCase());
+        });
+      });
       setCoveredClassTypes(Array.from(coveredTypes));
 
       const formattedClasses = schedules.map((schedule: any) => ({
-        id: schedule.id, name: schedule.class_name, type: schedule.class_type, instructor: schedule.instructor,
-        duration: schedule.duration, capacity: schedule.capacity, icon: schedule.icon, background_color: schedule.background_color,
-        start_time: schedule.start_time, booked_spots: schedule.booked_spots, isBookedByUser: userBookedScheduleIds.has(schedule.id),
+        id: schedule.id,
+        name: schedule.class_name,
+        type: schedule.class_type,
+        instructor: schedule.instructor,
+        duration: schedule.duration,
+        capacity: schedule.capacity,
+        icon: schedule.icon,
+        background_color: schedule.background_color,
+        start_time: schedule.start_time,
+        booked_spots: schedule.booked_spots,
+        isBookedByUser: userBookedScheduleIds.has(schedule.id),
       }));
-      setClasses(formattedClasses);
 
+      setClasses(formattedClasses);
+      
     } catch (error: any) {
-      showError("Could not load dashboard data");
+      showError("Could not load classes");
     } finally {
       setLoading(false);
     }
   };
-  
-  useEffect(() => {
-    if (!user) {
-      navigate("/login");
-    } else {
-      fetchClassesAndPackages();
-    }
-  }, [user, navigate]);
 
   useEffect(() => {
     let result = [...classes];
+
     if (onlyBonus) {
-      result = result.filter(cls => {
-        if (!cls.type) return false;
-        const classTypeLower = cls.type.toLowerCase();
-        return coveredClassTypes.some(coveredType => classTypeLower.includes(coveredType) || coveredType.includes(classTypeLower));
-      });
+        result = result.filter(cls => {
+            if (!cls.type) return false;
+            const classTypeLower = cls.type.toLowerCase();
+            // Check if the class type is covered by any of the user's packages (current or future)
+            return coveredClassTypes.some(coveredType => 
+                classTypeLower.includes(coveredType) || coveredType.includes(classTypeLower)
+            );
+        });
     }
+
     setFilteredClasses(result);
 
     const grouped = result.reduce((acc, cls) => {
       const dateKey = format(new Date(cls.start_time), 'yyyy-MM-dd');
-      if (!acc[dateKey]) acc[dateKey] = [];
+      if (!acc[dateKey]) {
+        acc[dateKey] = [];
+      }
       acc[dateKey].push(cls);
       return acc;
     }, {} as Record<string, Class[]>);
     setGroupedClasses(grouped);
+
   }, [onlyBonus, classes, coveredClassTypes]);
 
   const handleBookClass = async (scheduleId: string) => {
     setBookingLoading(true);
     try {
-      const { error } = await supabase.functions.invoke('book-class', { body: { schedule_id: scheduleId } });
+      const { error } = await supabase.functions.invoke('book-class', {
+        body: { schedule_id: scheduleId },
+      });
+
       if (error) {
         const errorData = await error.context.json();
         throw new Error(errorData.error || 'Could not make the booking.');
       }
+
       showSuccess("Booking confirmed! Your spot has been successfully booked.");
-      fetchClassesAndPackages();
+      fetchClasses();
     } catch (error: any) {
       showError(error.message);
     } finally {
@@ -168,42 +168,7 @@ const Dashboard = () => {
       <div className="mb-8">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Upcoming Classes</h2>
         
-        {!loading && (
-          <Card className="mb-6">
-            <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <h4 className="font-semibold text-gray-800 capitalize">{format(new Date(), "MMMM yyyy", { locale: enGB })}</h4>
-                {currentUserPackage ? (
-                  <div className="text-sm text-gray-600 mt-1 space-y-1">
-                    {currentUserPackage.packages.package_items.map((item: any) => (
-                      <p key={item.class_type}>
-                        <strong>{item.class_type}:</strong> {remainingCredits[item.class_type] ?? item.credits} / {item.credits} credits remaining
-                      </p>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500 mt-1">No active package for this month.</p>
-                )}
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-800 capitalize">{format(addMonths(new Date(), 1), "MMMM yyyy", { locale: enGB })}</h4>
-                {nextMonthUserPackage ? (
-                  <div className="text-sm text-gray-600 mt-1 space-y-1">
-                    {nextMonthUserPackage.packages.package_items.map((item: any) => (
-                      <p key={item.class_type}>
-                        <strong>{item.class_type}:</strong> {item.credits} credits
-                      </p>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500 mt-1">No package acquired for next month.</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 mb-6">
           <Switch id="bonus-only" checked={onlyBonus} onCheckedChange={setOnlyBonus} />
           <Label htmlFor="bonus-only">Only Bonus Acquired</Label>
         </div>
