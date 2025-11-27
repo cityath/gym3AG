@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
-import { startOfMonth, endOfMonth, format } from "https://deno.land/x/date_fns/index.js";
+import { startOfMonth, endOfMonth, format } from "https://esm.sh/date-fns@2.30.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -63,13 +63,16 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'This class type is not included in your package.' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
+    const { data: classData, error: classError } = await supabaseAdmin.from('schedules').select('class_id').eq('id', schedule_id).single();
+    if(classError || !classData) throw new Error('Class not found for schedule');
+
     const { count: bookedCount, error: countError } = await supabaseAdmin
       .from('bookings')
       .select('id', { count: 'exact' })
       .eq('user_id', user.id)
-      .gte('booking_date', userPackage.valid_from)
-      .lte('booking_date', userPackage.valid_until)
-      .eq('class_id', (await supabaseAdmin.from('schedules').select('class_id').eq('id', schedule_id).single()).data.class_id);
+      .gte('booking_date', userPackage.valid_from + 'T00:00:00Z')
+      .lte('booking_date', userPackage.valid_until + 'T23:59:59Z')
+      .eq('class_id', classData.class_id);
       
     if (countError) throw countError;
 
