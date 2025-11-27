@@ -63,7 +63,7 @@ const Dashboard = () => {
         supabase.rpc('get_schedules_with_booking_counts', { start_date: today.toISOString() }),
         supabase.from('bookings').select('schedule_id').eq('user_id', user.id),
         supabase.from('user_packages').select('*, packages(*, package_items(*))').eq('user_id', user.id).gte('valid_until', format(today, 'yyyy-MM-dd')),
-        supabase.from('bookings').select('classes(type)').eq('user_id', user.id).gte('booking_date', format(currentMonthStart, 'yyyy-MM-dd')).lte('booking_date', format(currentMonthEnd, 'yyyy-MM-dd'))
+        supabase.from('bookings').select('classes(type)').eq('user_id', user.id).gte('booking_date', currentMonthStart.toISOString()).lte('booking_date', currentMonthEnd.toISOString())
       ]);
 
       if (schedulesError) throw schedulesError;
