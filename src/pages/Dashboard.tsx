@@ -9,9 +9,11 @@ import { MadeWithDyad } from "@/components/made-with-dyad";
 import { showSuccess, showError } from "@/utils/toast";
 import { supabase } from "@/integrations/supabase/client";
 import DynamicIcon from "@/components/ui/dynamic-icon";
-import { format } from "date-fns";
+import { format, startOfMonth, endOfMonth } from "date-fns";
 import { enGB } from "date-fns/locale";
 import BookingConfirmationDialog from "@/components/BookingConfirmationDialog";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface Class {
   id: string; // schedule ID
@@ -40,6 +42,8 @@ const Dashboard = () => {
   const [instructors, setInstructors] = useState<string[]>([]);
   const [classTypes, setClassTypes] = useState<string[]>([]);
   const [classToBook, setClassToBook] = useState<Class | null>(null);
+  const [onlyBonus, setOnlyBonus] = useState(false);
+  const [userCredits, setUserCredits] = useState<Record<string, { remaining: number }>>({});
 
   useEffect(() => {
     if (!user) {
@@ -72,6 +76,47 @@ const Dashboard = () => {
 
       const userBookedScheduleIds = new Set(userBookings.map(b => b.schedule_id));
 
+      // Fetch user's current package and calculate remaining credits
+      const currentMonthStart = startOfMonth(today);
+      const currentMonthEnd = endOfMonth(today);
+
+      const { data: userPackageData, error: userPackageError } = await supabase
+        .from('user_packages')
+        .select('*, packages(*, package_items(*))')
+        .eq('user_id', user.id)
+        .gte('valid_from', format(currentMonthStart, 'yyyy-MM-dd'))
+        .lte('valid_until', format(currentMonthEnd, 'yyyy-MM-dd'))
+        .single();
+      
+      if (userPackageError && userPackageError.code !== 'PGRST116') throw userPackageError;
+
+      const creditsInfo: Record<string, { remaining: number }> = {};
+      if (userPackageData) {
+        const { data: monthBookings, error: monthBookingsError } = await supabase
+          .from('bookings')
+          .select('classes(type)')
+          .eq('user_id', user.id)
+          .gte('booking_date', currentMonthStart.toISOString())
+          .lte('booking_date', currentMonthEnd.toISOString());
+        
+        if (monthBookingsError) throw monthBookingsError;
+
+        const usedCredits: Record<string, number> = (monthBookings || []).reduce((acc, booking) => {
+            const type = (booking.classes as any)?.type;
+            if (type) {
+                acc[type] = (acc[type] || 0) + 1;
+            }
+            return acc;
+        }, {});
+
+        userPackageData.packages.package_items.forEach(item => {
+            creditsInfo[item.class_type] = {
+                remaining: item.credits - (usedCredits[item.class_type] || 0)
+            };
+        });
+      }
+      setUserCredits(creditsInfo);
+
       const formattedClasses = schedules.map((schedule: any) => ({
         id: schedule.id,
         name: schedule.class_name,
@@ -103,6 +148,14 @@ const Dashboard = () => {
 
   useEffect(() => {
     let result = [...classes];
+
+    if (onlyBonus) {
+        result = result.filter(cls => {
+            const creditInfo = userCredits[cls.type];
+            return creditInfo && creditInfo.remaining > 0;
+        });
+    }
+
     if (filterType !== "all") result = result.filter(cls => cls.type === filterType);
     if (filterInstructor !== "all") result = result.filter(cls => cls.instructor === filterInstructor);
     setFilteredClasses(result);
@@ -117,7 +170,7 @@ const Dashboard = () => {
     }, {} as Record<string, Class[]>);
     setGroupedClasses(grouped);
 
-  }, [filterType, filterInstructor, classes]);
+  }, [onlyBonus, userCredits, filterType, filterInstructor, classes]);
 
   const handleBookClass = async (scheduleId: string) => {
     setBookingLoading(true);
@@ -174,6 +227,10 @@ const Dashboard = () => {
               </SelectContent>
             </Select>
           </div>
+        </div>
+        <div className="flex items-center space-x-2 mb-6">
+          <Switch id="bonus-only" checked={onlyBonus} onCheckedChange={setOnlyBonus} />
+          <Label htmlFor="bonus-only">Only Bonus Acquired</Label>
         </div>
       </div>
 
