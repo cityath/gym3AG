@@ -7,6 +7,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import { startOfMonth, endOfMonth, addMonths, format } from "date-fns";
 import { Package } from "./admin/Packages";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 const PackagesPage = () => {
   const { user } = useAuth();
@@ -165,7 +166,7 @@ const PackagesPage = () => {
                     </CardContent>
                     <div className="p-4 pt-0">
                       <Button 
-                        className="w-full" 
+                        className={cn("w-full", isThisPackageAcquired && "bg-green-500 hover:bg-green-600")}
                         onClick={() => handleAcquirePackage(pkg.id)}
                         disabled={isNextMonthPackageAcquired}
                       >
