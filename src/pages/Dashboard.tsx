@@ -202,12 +202,11 @@ const Dashboard = () => {
                           </CardTitle>
                           <CardDescription>With... {cls.instructor}</CardDescription>
                         </div>
-                        <div className="text-sm text-gray-600 text-right shrink-0">
-                          <div className="flex items-center justify-end">
+                        <div className="text-right shrink-0">
+                          <div className="flex items-center justify-end font-bold text-lg text-gray-800">
                             <Clock className="mr-1.5 h-4 w-4" />
                             <span>{format(new Date(cls.start_time), 'p', { locale: enGB })}</span>
                           </div>
-                          <div className="text-xs">({cls.duration} min)</div>
                         </div>
                       </CardHeader>
                       <CardContent className="flex-grow p-4 pt-0">
