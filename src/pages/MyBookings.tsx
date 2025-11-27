@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enGB } from "date-fns/locale";
-import { Calendar as CalendarIcon, Clock, User, List } from "lucide-react";
+import { Calendar as CalendarIcon, User, List } from "lucide-react";
 import { getContrastingTextColor } from "@/utils/styleUtils";
 import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -193,9 +193,10 @@ const MyBookings = () => {
                               style={{ backgroundColor: bgColor || 'transparent' }}
                             >
                               <div className="space-y-2">
-                                <h3 className="font-semibold text-lg" style={{ color: textColor }}>{booking.schedules.classes.name}</h3>
+                                <h3 className="font-semibold text-lg" style={{ color: textColor }}>
+                                  {`${booking.schedules.classes.name} - ${format(new Date(booking.schedules.start_time), 'p', { locale: enGB })}`}
+                                </h3>
                                 <div className="flex items-center text-sm" style={{ color: textColor }}><User className="mr-2 h-4 w-4" />{booking.schedules.classes.instructor}</div>
-                                <div className="flex items-center text-sm" style={{ color: textColor }}><Clock className="mr-2 h-4 w-4" />{format(new Date(booking.schedules.start_time), 'p', { locale: enGB })}</div>
                               </div>
                               <Button variant="outline" onClick={() => setBookingToCancel(booking)}>
                                 Cancel Booking
