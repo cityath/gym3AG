@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Clock, Users } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { showSuccess, showError } from "@/utils/toast";
@@ -37,10 +36,6 @@ const Dashboard = () => {
   const [groupedClasses, setGroupedClasses] = useState<Record<string, Class[]>>({});
   const [loading, setLoading] = useState(true);
   const [bookingLoading, setBookingLoading] = useState(false);
-  const [filterType, setFilterType] = useState("all");
-  const [filterInstructor, setFilterInstructor] = useState("all");
-  const [instructors, setInstructors] = useState<string[]>([]);
-  const [classTypes, setClassTypes] = useState<string[]>([]);
   const [classToBook, setClassToBook] = useState<Class | null>(null);
   const [onlyBonus, setOnlyBonus] = useState(false);
   const [userCredits, setUserCredits] = useState<Record<string, { remaining: number }>>({});
@@ -133,12 +128,6 @@ const Dashboard = () => {
 
       setClasses(formattedClasses);
       
-      const uniqueInstructors = Array.from(new Set(formattedClasses.map(cls => cls.instructor)));
-      setInstructors(uniqueInstructors.sort());
-
-      const uniqueTypes = Array.from(new Set(formattedClasses.map(cls => cls.type)));
-      setClassTypes(uniqueTypes.sort());
-
     } catch (error: any) {
       showError("Could not load classes");
     } finally {
@@ -156,8 +145,6 @@ const Dashboard = () => {
         });
     }
 
-    if (filterType !== "all") result = result.filter(cls => cls.type === filterType);
-    if (filterInstructor !== "all") result = result.filter(cls => cls.instructor === filterInstructor);
     setFilteredClasses(result);
 
     const grouped = result.reduce((acc, cls) => {
@@ -170,7 +157,7 @@ const Dashboard = () => {
     }, {} as Record<string, Class[]>);
     setGroupedClasses(grouped);
 
-  }, [onlyBonus, userCredits, filterType, filterInstructor, classes]);
+  }, [onlyBonus, userCredits, classes]);
 
   const handleBookClass = async (scheduleId: string) => {
     setBookingLoading(true);
@@ -201,33 +188,6 @@ const Dashboard = () => {
       <div className="mb-8">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Upcoming Classes</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Class type</label>
-            <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger><SelectValue placeholder="All types" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All types</SelectItem>
-                {classTypes.map(type => (
-                  <SelectItem key={type} value={type}>{type}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Instructor</label>
-            <Select value={filterInstructor} onValueChange={setFilterInstructor}>
-              <SelectTrigger><SelectValue placeholder="All instructors" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All instructors</SelectItem>
-                {instructors.map(instructor => (
-                  <SelectItem key={instructor} value={instructor}>{instructor}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
         <div className="flex items-center space-x-2 mb-6">
           <Switch id="bonus-only" checked={onlyBonus} onCheckedChange={setOnlyBonus} />
           <Label htmlFor="bonus-only">Only Bonus Acquired</Label>
