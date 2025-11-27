@@ -93,28 +93,30 @@ const Dashboard = () => {
       setCurrentUserPackage(currentUserPackageData);
       setNextMonthUserPackage(nextMonthUserPackageData);
       if (currentUserPackageData) {
-        const finalRemainingCredits: Record<string, number> = {};
-
-        // For each item in the user's package (e.g., "Spinning", "Yoga")
-        currentUserPackageData.packages.package_items.forEach((packageItem: any) => {
-          const packageItemTypeLower = packageItem.class_type.toLowerCase();
-          
-          // Count how many of this month's bookings match this package item type
-          const usedCreditsCount = (monthBookings || []).filter(booking => {
-            const bookingType = (booking.classes as any)?.type;
-            if (!bookingType) return false;
-            
-            const bookingTypeLower = bookingType.toLowerCase();
-            
-            // Use a flexible match (e.g., package "Spinning" matches class "Spinning Avanzado")
-            return bookingTypeLower.includes(packageItemTypeLower) || packageItemTypeLower.includes(bookingTypeLower);
-          }).length;
-
-          // Calculate remaining credits and store it
-          finalRemainingCredits[packageItem.class_type] = packageItem.credits - usedCreditsCount;
+        // 1. Create a map to store how many credits have been used for each class type in the package.
+        const usedCredits = new Map<string, number>();
+        currentUserPackageData.packages.package_items.forEach((item: any) => {
+            usedCredits.set(item.class_type, 0);
         });
 
-        setRemainingCredits(finalRemainingCredits);
+        // 2. Go through each booking the user made this month.
+        (monthBookings || []).forEach(booking => {
+            const bookingType = (booking.classes as any)?.type;
+            // 3. If the booked class type is in our package, increment its used count.
+            if (bookingType && usedCredits.has(bookingType)) {
+                usedCredits.set(bookingType, usedCredits.get(bookingType)! + 1);
+            }
+        });
+
+        // 4. Now, calculate the final remaining credits.
+        const remaining: Record<string, number> = {};
+        currentUserPackageData.packages.package_items.forEach((item: any) => {
+            const total = item.credits;
+            const used = usedCredits.get(item.class_type) || 0;
+            remaining[item.class_type] = total - used;
+        });
+
+        setRemainingCredits(remaining);
       } else {
         setRemainingCredits({});
       }
