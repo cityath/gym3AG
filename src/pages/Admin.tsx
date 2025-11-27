@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { Users, LayoutDashboard, Calendar, ChevronDown, ChevronRight, Settings, BookCheck, Menu } from "lucide-react";
+import { Users, LayoutDashboard, Calendar, ChevronDown, ChevronRight, Settings, BookCheck, Menu, Package } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -50,6 +50,12 @@ const AdminSidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
           <LayoutDashboard className="mr-3 h-5 w-5" />
           <span>Classes</span>
         </NavLink>
+        {profile?.role === 'admin' && (
+          <NavLink to="/admin/packages" className={getNavLinkClass} onClick={handleLinkClick}>
+            <Package className="mr-3 h-5 w-5" />
+            <span>Packages</span>
+          </NavLink>
+        )}
         <Collapsible open={isScheduleOpen} onOpenChange={setIsScheduleOpen} className="space-y-1">
           <CollapsibleTrigger className="w-full">
             <div className={cn(baseLinkClass, inactiveLinkClass, "justify-between w-full")}>

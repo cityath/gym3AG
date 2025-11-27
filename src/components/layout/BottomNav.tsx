@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { CalendarDays, Ticket, User, Shield } from "lucide-react";
+import { CalendarDays, Ticket, User, Shield, Layers } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 const BottomNav = () => {
@@ -27,6 +27,15 @@ const BottomNav = () => {
         >
           <Ticket className="h-6 w-6 mb-1" />
           <span>My Bookings</span>
+        </NavLink>
+        <NavLink
+          to="/packages"
+          className={({ isActive }) =>
+            `flex flex-col items-center justify-center w-full pt-2 pb-1 text-sm ${isActive ? activeLinkClass : inactiveLinkClass}`
+          }
+        >
+          <Layers className="h-6 w-6 mb-1" />
+          <span>Packages</span>
         </NavLink>
         <NavLink
           to="/profile"

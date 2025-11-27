@@ -25,6 +25,8 @@ const Preferences = lazy(() => import("./pages/admin/Preferences"));
 const Settings = lazy(() => import("./pages/admin/Settings"));
 const GenerateSchedule = lazy(() => import("./pages/admin/GenerateSchedule"));
 const BookingDashboard = lazy(() => import("./pages/admin/BookingDashboard"));
+const Packages = lazy(() => import("./pages/admin/Packages"));
+const PackagesPage = lazy(() => import("./pages/Packages"));
 
 const App = () => (
   <TooltipProvider>
@@ -43,6 +45,7 @@ const App = () => (
             <Route element={<MainLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/my-bookings" element={<MyBookings />} />
+              <Route path="/packages" element={<PackagesPage />} />
               <Route path="/profile" element={<Profile />} />
             </Route>
             
@@ -53,6 +56,7 @@ const App = () => (
                 <Route path="booking-dashboard" element={<BookingDashboard />} />
                 <Route path="users" element={<Users />} />
                 <Route path="classes" element={<Classes />} />
+                <Route path="packages" element={<Packages />} />
                 <Route path="schedule/weekly" element={<WeeklyCalendar />} />
                 <Route path="schedule/monthly" element={<MonthlyCalendar />} />
                 <Route path="schedule/preferences" element={<Preferences />} />
