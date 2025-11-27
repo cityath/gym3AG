@@ -185,6 +185,40 @@ const Dashboard = () => {
     setGroupedClasses(grouped);
   }, [onlyBonus, classes, coveredClassTypes]);
 
+  const handleAttemptBooking = (cls: Class) => {
+    const classDate = new Date(cls.start_time);
+    const today = new Date();
+    const isNextMonth = classDate.getMonth() > today.getMonth() || classDate.getFullYear() > today.getFullYear();
+
+    const packageToCheck = isNextMonth ? nextMonthUserPackage : currentUserPackage;
+    const creditsToCheck = isNextMonth ? nextMonthRemainingCredits : remainingCredits;
+    const monthString = isNextMonth ? "next month" : "this month";
+
+    if (!packageToCheck) {
+        showError(`You don't have an active package for ${monthString}.`);
+        return;
+    }
+
+    const classTypeToCheck = cls.type.toLowerCase();
+
+    const relevantPackageItem = packageToCheck.packages.package_items.find((item: any) => 
+        classTypeToCheck.includes(item.class_type.toLowerCase())
+    );
+
+    if (!relevantPackageItem) {
+        showError(`This class is not included in your package for ${monthString}.`);
+        return;
+    }
+
+    const creditsLeft = creditsToCheck[relevantPackageItem.class_type];
+
+    if (creditsLeft !== undefined && creditsLeft > 0) {
+        setClassToBook(cls);
+    } else {
+        showError(`You have no credits left for ${relevantPackageItem.class_type} classes.`);
+    }
+  };
+
   const handleBookClass = async (scheduleId: string) => {
     setBookingLoading(true);
     try {
@@ -265,7 +299,7 @@ const Dashboard = () => {
                         <Button 
                           className="w-full" 
                           disabled={isFull || cls.isBookedByUser} 
-                          onClick={() => setClassToBook(cls)}
+                          onClick={() => handleAttemptBooking(cls)}
                         >
                           {cls.isBookedByUser ? "Already booked" : isFull ? "Class full" : "Book spot"}
                         </Button>
