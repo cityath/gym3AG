@@ -63,7 +63,7 @@ const Dashboard = () => {
         supabase.rpc('get_schedules_with_booking_counts', { start_date: today.toISOString() }),
         supabase.from('bookings').select('schedule_id').eq('user_id', user.id),
         supabase.from('user_packages').select('*, packages(*, package_items(*))').eq('user_id', user.id).gte('valid_until', format(today, 'yyyy-MM-dd')),
-        supabase.from('bookings').select('schedules(classes(type))').eq('user_id', user.id).gte('booking_date', currentMonthStart.toISOString()).lte('booking_date', currentMonthEnd.toISOString())
+        supabase.from('bookings').select('classes(type)').eq('user_id', user.id).gte('booking_date', currentMonthStart.toISOString()).lte('booking_date', currentMonthEnd.toISOString())
       ]);
 
       if (schedulesError) throw schedulesError;
@@ -83,7 +83,7 @@ const Dashboard = () => {
         currentPackage.packages.package_items.forEach((item: any) => {
           const packageItemTypeLower = item.class_type.toLowerCase();
           const used = (monthBookings || []).filter(booking => {
-            const bookingType = (booking.schedules as any)?.classes?.type;
+            const bookingType = (booking.classes as any)?.type;
             if (!bookingType) return false;
             const bookingTypeLower = bookingType.toLowerCase();
             return bookingTypeLower.includes(packageItemTypeLower) || packageItemTypeLower.includes(bookingTypeLower);
