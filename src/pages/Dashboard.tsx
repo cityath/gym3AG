@@ -45,6 +45,7 @@ const Dashboard = () => {
   const [currentUserPackage, setCurrentUserPackage] = useState<any>(null);
   const [nextMonthUserPackage, setNextMonthUserPackage] = useState<any>(null);
   const [remainingCredits, setRemainingCredits] = useState<Record<string, number>>({});
+  const [nextMonthRemainingCredits, setNextMonthRemainingCredits] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!user) {
@@ -72,14 +73,16 @@ const Dashboard = () => {
         { data: allUserPackages, error: allPackagesError },
         { data: currentUserPackageData, error: currentUserPackageError },
         { data: nextMonthUserPackageData, error: nextMonthUserPackageError },
-        { data: monthBookings, error: monthBookingsError }
+        { data: monthBookings, error: monthBookingsError },
+        { data: nextMonthBookings, error: nextMonthBookingsError }
       ] = await Promise.all([
         supabase.rpc('get_schedules_with_booking_counts', { start_date: today.toISOString() }),
         supabase.from('bookings').select('schedule_id').eq('user_id', user.id),
         supabase.from('user_packages').select('packages(package_items(class_type))').eq('user_id', user.id).gte('valid_until', format(today, 'yyyy-MM-dd')),
         supabase.from("user_packages").select("*, packages(*, package_items(*))").eq("user_id", user.id).gte("valid_from", format(currentMonthStart, 'yyyy-MM-dd')).lte("valid_until", format(currentMonthEnd, 'yyyy-MM-dd')).single(),
         supabase.from("user_packages").select("*, packages(*, package_items(*))").eq("user_id", user.id).gte("valid_from", format(nextMonthStart, 'yyyy-MM-dd')).lte("valid_until", format(nextMonthEnd, 'yyyy-MM-dd')).single(),
-        supabase.from('bookings').select('classes(type)').eq('user_id', user.id).gte('booking_date', currentMonthStart.toISOString()).lte('booking_date', currentMonthEnd.toISOString())
+        supabase.from('bookings').select('classes(type)').eq('user_id', user.id).gte('booking_date', currentMonthStart.toISOString()).lte('booking_date', currentMonthEnd.toISOString()),
+        supabase.from('bookings').select('classes(type)').eq('user_id', user.id).gte('booking_date', nextMonthStart.toISOString()).lte('booking_date', nextMonthEnd.toISOString())
       ]);
 
       if (schedulesError) throw schedulesError;
@@ -88,37 +91,46 @@ const Dashboard = () => {
       if (currentUserPackageError && currentUserPackageError.code !== 'PGRST116') throw currentUserPackageError;
       if (nextMonthUserPackageError && nextMonthUserPackageError.code !== 'PGRST116') throw nextMonthUserPackageError;
       if (monthBookingsError) throw monthBookingsError;
+      if (nextMonthBookingsError) throw nextMonthBookingsError;
 
       // Process data for credit summary
       setCurrentUserPackage(currentUserPackageData);
       setNextMonthUserPackage(nextMonthUserPackageData);
+
+      // --- Process Current Month Credits ---
       if (currentUserPackageData) {
-        // 1. Create a map to store how many credits have been used for each class type in the package.
-        const usedCredits = new Map<string, number>();
-        currentUserPackageData.packages.package_items.forEach((item: any) => {
-            usedCredits.set(item.class_type, 0);
-        });
-
-        // 2. Go through each booking the user made this month.
-        (monthBookings || []).forEach(booking => {
+        const finalRemainingCredits: Record<string, number> = {};
+        currentUserPackageData.packages.package_items.forEach((packageItem: any) => {
+          const packageItemTypeLower = packageItem.class_type.toLowerCase();
+          const usedCreditsCount = (monthBookings || []).filter(booking => {
             const bookingType = (booking.classes as any)?.type;
-            // 3. If the booked class type is in our package, increment its used count.
-            if (bookingType && usedCredits.has(bookingType)) {
-                usedCredits.set(bookingType, usedCredits.get(bookingType)! + 1);
-            }
+            if (!bookingType) return false;
+            const bookingTypeLower = bookingType.toLowerCase();
+            return bookingTypeLower.includes(packageItemTypeLower);
+          }).length;
+          finalRemainingCredits[packageItem.class_type] = packageItem.credits - usedCreditsCount;
         });
-
-        // 4. Now, calculate the final remaining credits.
-        const remaining: Record<string, number> = {};
-        currentUserPackageData.packages.package_items.forEach((item: any) => {
-            const total = item.credits;
-            const used = usedCredits.get(item.class_type) || 0;
-            remaining[item.class_type] = total - used;
-        });
-
-        setRemainingCredits(remaining);
+        setRemainingCredits(finalRemainingCredits);
       } else {
         setRemainingCredits({});
+      }
+
+      // --- Process Next Month Credits ---
+      if (nextMonthUserPackageData) {
+        const finalRemainingCredits: Record<string, number> = {};
+        nextMonthUserPackageData.packages.package_items.forEach((packageItem: any) => {
+          const packageItemTypeLower = packageItem.class_type.toLowerCase();
+          const usedCreditsCount = (nextMonthBookings || []).filter(booking => {
+            const bookingType = (booking.classes as any)?.type;
+            if (!bookingType) return false;
+            const bookingTypeLower = bookingType.toLowerCase();
+            return bookingTypeLower.includes(packageItemTypeLower);
+          }).length;
+          finalRemainingCredits[packageItem.class_type] = packageItem.credits - usedCreditsCount;
+        });
+        setNextMonthRemainingCredits(finalRemainingCredits);
+      } else {
+        setNextMonthRemainingCredits({});
       }
 
       // Process data for class list
@@ -205,6 +217,7 @@ const Dashboard = () => {
           currentMonthPackage={currentUserPackage}
           nextMonthPackage={nextMonthUserPackage}
           remainingCredits={remainingCredits}
+          nextMonthRemainingCredits={nextMonthRemainingCredits}
         />
 
         <div className="flex items-center space-x-2 mb-6">

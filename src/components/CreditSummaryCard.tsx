@@ -9,9 +9,10 @@ interface CreditSummaryCardProps {
   currentMonthPackage: any;
   nextMonthPackage: any;
   remainingCredits: Record<string, number>;
+  nextMonthRemainingCredits: Record<string, number>;
 }
 
-const CreditSummaryCard = ({ loading, currentMonthPackage, nextMonthPackage, remainingCredits }: CreditSummaryCardProps) => {
+const CreditSummaryCard = ({ loading, currentMonthPackage, nextMonthPackage, remainingCredits, nextMonthRemainingCredits }: CreditSummaryCardProps) => {
   if (loading) {
     return (
       <Card className="mb-8">
@@ -61,7 +62,7 @@ const CreditSummaryCard = ({ loading, currentMonthPackage, nextMonthPackage, rem
               <ul className="list-disc pl-5 mt-1">
                 {nextMonthPackage.packages.package_items.map((item: any) => (
                   <li key={item.class_type}>
-                    <strong>{item.class_type}:</strong> {item.credits} credits
+                    <strong>{item.class_type}:</strong> {nextMonthRemainingCredits[item.class_type] ?? item.credits} / {item.credits} credits remaining
                   </li>
                 ))}
               </ul>
