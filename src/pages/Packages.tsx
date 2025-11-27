@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { showSuccess, showError } from "@/utils/toast";
 import { startOfMonth, endOfMonth, addMonths, format } from "date-fns";
+import { enGB } from "date-fns/locale";
 import { Package } from "./admin/Packages";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -15,6 +16,7 @@ const PackagesPage = () => {
   const [currentUserPackage, setCurrentUserPackage] = useState<any>(null);
   const [nextMonthUserPackage, setNextMonthUserPackage] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [remainingCredits, setRemainingCredits] = useState<Record<string, number>>({});
 
   const fetchPageData = async () => {
     if (!user) return;
@@ -59,6 +61,34 @@ const PackagesPage = () => {
       setAvailablePackages(packagesData || []);
       setCurrentUserPackage(currentUserPackageData);
       setNextMonthUserPackage(nextMonthUserPackageData);
+
+      // Calculate remaining credits for the current month
+      if (currentUserPackageData) {
+        const { data: monthBookings, error: monthBookingsError } = await supabase
+          .from('bookings')
+          .select('classes(type)')
+          .eq('user_id', user.id)
+          .gte('booking_date', format(currentMonthStart, 'yyyy-MM-dd'))
+          .lte('booking_date', format(currentMonthEnd, 'yyyy-MM-dd'));
+
+        if (monthBookingsError) throw monthBookingsError;
+
+        const usedCredits: Record<string, number> = (monthBookings || []).reduce((acc, booking) => {
+          const type = (booking.classes as any)?.type;
+          if (type) {
+            acc[type] = (acc[type] || 0) + 1;
+          }
+          return acc;
+        }, {});
+
+        const creditsInfo: Record<string, number> = {};
+        currentUserPackageData.packages.package_items.forEach((item: any) => {
+          creditsInfo[item.class_type] = item.credits - (usedCredits[item.class_type] || 0);
+        });
+        setRemainingCredits(creditsInfo);
+      } else {
+        setRemainingCredits({});
+      }
 
     } catch (error: any) {
       showError("Could not load package data.");
@@ -111,28 +141,44 @@ const PackagesPage = () => {
             <CardHeader>
               <CardTitle>My Packages</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div>
-                <h3 className="font-semibold text-gray-800">This Month's Package</h3>
+                <h3 className="font-semibold text-gray-800 capitalize">{format(new Date(), "MMMM yyyy", { locale: enGB })}</h3>
                 {currentUserPackage ? (
-                  <div>
+                  <div className="mt-2">
                     <p className="text-lg font-medium">{currentUserPackage.packages.name}</p>
-                    <p className="text-sm text-gray-600">{currentUserPackage.packages.description}</p>
+                    <p className="text-sm text-gray-600 mb-3">{currentUserPackage.packages.description}</p>
+                    <h4 className="text-sm font-medium text-gray-700">Remaining Credits:</h4>
+                    <ul className="list-disc pl-5 text-sm text-gray-600">
+                      {currentUserPackage.packages.package_items.map((item: any) => (
+                        <li key={item.class_type}>
+                          <strong>{item.class_type}:</strong> {remainingCredits[item.class_type] ?? item.credits} / {item.credits}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500">You do not have an active package for this month.</p>
+                  <p className="text-sm text-gray-500 mt-2">You do not have an active package for this month.</p>
                 )}
               </div>
               <Separator />
               <div>
-                <h3 className="font-semibold text-gray-800">Next Month's Package</h3>
+                <h3 className="font-semibold text-gray-800 capitalize">{format(addMonths(new Date(), 1), "MMMM yyyy", { locale: enGB })}</h3>
                 {nextMonthUserPackage ? (
-                  <div>
+                  <div className="mt-2">
                     <p className="text-lg font-medium">{nextMonthUserPackage.packages.name}</p>
-                    <p className="text-sm text-gray-600">{nextMonthUserPackage.packages.description}</p>
+                    <p className="text-sm text-gray-600 mb-3">{nextMonthUserPackage.packages.description}</p>
+                     <h4 className="text-sm font-medium text-gray-700">Package Includes:</h4>
+                    <ul className="list-disc pl-5 text-sm text-gray-600">
+                      {nextMonthUserPackage.packages.package_items.map((item: any) => (
+                        <li key={item.class_type}>
+                          <strong>{item.class_type}:</strong> {item.credits} credits
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500">You have not acquired a package for next month yet.</p>
+                  <p className="text-sm text-gray-500 mt-2">You have not acquired a package for next month yet.</p>
                 )}
               </div>
             </CardContent>
