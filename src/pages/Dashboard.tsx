@@ -99,14 +99,16 @@ const Dashboard = () => {
         const usedCredits: Record<string, number> = (monthBookings || []).reduce((acc, booking) => {
             const type = (booking.classes as any)?.type;
             if (type) {
-                acc[type] = (acc[type] || 0) + 1;
+                const key = type.toLowerCase();
+                acc[key] = (acc[key] || 0) + 1;
             }
             return acc;
         }, {});
 
         userPackageData.packages.package_items.forEach(item => {
-            creditsInfo[item.class_type] = {
-                remaining: item.credits - (usedCredits[item.class_type] || 0)
+            const key = item.class_type.toLowerCase();
+            creditsInfo[key] = {
+                remaining: item.credits - (usedCredits[key] || 0)
             };
         });
       }
@@ -140,7 +142,9 @@ const Dashboard = () => {
 
     if (onlyBonus) {
         result = result.filter(cls => {
-            const creditInfo = userCredits[cls.type];
+            if (!cls.type) return false;
+            const key = cls.type.toLowerCase();
+            const creditInfo = userCredits[key];
             return creditInfo && creditInfo.remaining > 0;
         });
     }
