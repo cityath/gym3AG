@@ -96,11 +96,16 @@ const Dashboard = () => {
         
         if (monthBookingsError) throw monthBookingsError;
 
+        const packageClassTypes = userPackageData.packages.package_items.map(item => item.class_type.toLowerCase());
+
         const usedCredits: Record<string, number> = (monthBookings || []).reduce((acc, booking) => {
-            const type = (booking.classes as any)?.type;
-            if (type) {
-                const key = type.toLowerCase();
-                acc[key] = (acc[key] || 0) + 1;
+            const bookingType = (booking.classes as any)?.type;
+            if (bookingType) {
+                const bookingTypeLower = bookingType.toLowerCase();
+                const packageTypeKey = packageClassTypes.find(pKey => bookingTypeLower.includes(pKey) || pKey.includes(bookingTypeLower));
+                if (packageTypeKey) {
+                    acc[packageTypeKey] = (acc[packageTypeKey] || 0) + 1;
+                }
             }
             return acc;
         }, {});
@@ -143,8 +148,11 @@ const Dashboard = () => {
     if (onlyBonus) {
         result = result.filter(cls => {
             if (!cls.type) return false;
-            const key = cls.type.toLowerCase();
-            const creditInfo = userCredits[key];
+            const classTypeLower = cls.type.toLowerCase();
+            const creditKey = Object.keys(userCredits).find(key => classTypeLower.includes(key) || key.includes(classTypeLower));
+            if (!creditKey) return false;
+            
+            const creditInfo = userCredits[creditKey];
             return creditInfo && creditInfo.remaining > 0;
         });
     }

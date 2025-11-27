@@ -43,40 +43,48 @@ serve(async (req) => {
 
     const classDate = new Date(schedule.start_time);
     const classType = schedule.classes.type;
-    const monthStart = format(startOfMonth(classDate), 'yyyy-MM-dd');
-    const monthEnd = format(endOfMonth(classDate), 'yyyy-MM-dd');
+    const monthStart = startOfMonth(classDate);
+    const monthEnd = endOfMonth(classDate);
 
     const { data: userPackage, error: packageError } = await supabaseAdmin
       .from('user_packages')
       .select('*, packages(*, package_items(*))')
       .eq('user_id', user.id)
-      .eq('valid_from', monthStart)
-      .eq('valid_until', monthEnd)
+      .gte('valid_from', format(monthStart, 'yyyy-MM-dd'))
+      .lte('valid_until', format(monthEnd, 'yyyy-MM-dd'))
       .single();
 
     if (packageError || !userPackage) {
       return new Response(JSON.stringify({ error: 'You do not have an active package for this month.' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const packageItem = userPackage.packages.package_items.find(item => item.class_type === classType);
+    const classTypeLower = classType.toLowerCase();
+    const packageItem = userPackage.packages.package_items.find(item => {
+        const itemTypeLower = item.class_type.toLowerCase();
+        return classTypeLower.includes(itemTypeLower) || itemTypeLower.includes(classTypeLower);
+    });
+
     if (!packageItem) {
       return new Response(JSON.stringify({ error: 'This class type is not included in your package.' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const { data: classData, error: classError } = await supabaseAdmin.from('schedules').select('class_id').eq('id', schedule_id).single();
-    if(classError || !classData) throw new Error('Class not found for schedule');
+    const { data: monthBookings, error: bookingsError } = await supabaseAdmin
+        .from('bookings')
+        .select('classes(type)')
+        .eq('user_id', user.id)
+        .gte('booking_date', monthStart.toISOString())
+        .lte('booking_date', monthEnd.toISOString());
 
-    const { count: bookedCount, error: countError } = await supabaseAdmin
-      .from('bookings')
-      .select('id', { count: 'exact' })
-      .eq('user_id', user.id)
-      .gte('booking_date', userPackage.valid_from + 'T00:00:00Z')
-      .lte('booking_date', userPackage.valid_until + 'T23:59:59Z')
-      .eq('class_id', classData.class_id);
-      
-    if (countError) throw countError;
+    if (bookingsError) throw bookingsError;
 
-    if (bookedCount >= packageItem.credits) {
+    const packageItemTypeLower = packageItem.class_type.toLowerCase();
+    const usedCredits = monthBookings.filter(b => {
+        if (!b.classes?.type) return false;
+        const bookingTypeLower = b.classes.type.toLowerCase();
+        return bookingTypeLower.includes(packageItemTypeLower) || packageItemTypeLower.includes(bookingTypeLower);
+    }).length;
+
+    if (usedCredits >= packageItem.credits) {
       return new Response(JSON.stringify({ error: `No credits left for ${classType} classes.` }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
     // --- Fin de la lógica de validación ---
