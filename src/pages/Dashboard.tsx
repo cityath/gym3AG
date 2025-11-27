@@ -198,7 +198,7 @@ const Dashboard = () => {
                         <CardTitle className="flex items-start">
                           <div className="flex items-center gap-3">
                             {cls.icon && <DynamicIcon name={cls.icon} className="h-6 w-6 text-gray-700" />}
-                            <span>{cls.name}</span>
+                            <span>{cls.type}</span>
                           </div>
                         </CardTitle>
                         <CardDescription>{cls.instructor}</CardDescription>
