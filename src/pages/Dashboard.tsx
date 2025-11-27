@@ -195,12 +195,11 @@ const Dashboard = () => {
                   return (
                     <Card key={cls.id} className="flex flex-col" style={{ backgroundColor: cls.background_color || 'white' }}>
                       <CardHeader className="p-4">
-                        <CardTitle className="flex justify-between items-start">
+                        <CardTitle className="flex items-start">
                           <div className="flex items-center gap-3">
                             {cls.icon && <DynamicIcon name={cls.icon} className="h-6 w-6 text-gray-700" />}
                             <span>{cls.name}</span>
                           </div>
-                          <span className="text-sm font-normal bg-blue-100 text-blue-800 px-2 py-1 rounded-full">{cls.type}</span>
                         </CardTitle>
                         <CardDescription>{cls.instructor}</CardDescription>
                       </CardHeader>
