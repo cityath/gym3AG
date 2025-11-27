@@ -120,7 +120,12 @@ const PackagesPage = () => {
               {availablePackages.map(pkg => (
                 <Card key={pkg.id} className="flex flex-col">
                   <CardHeader>
-                    <CardTitle>{pkg.name}</CardTitle>
+                    <div className="flex justify-between items-start">
+                      <CardTitle>{pkg.name}</CardTitle>
+                      <div className="text-xl font-bold text-gray-800">
+                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(pkg.price)}
+                      </div>
+                    </div>
                     <CardDescription>{pkg.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="flex-grow">

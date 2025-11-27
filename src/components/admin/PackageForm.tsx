@@ -29,6 +29,7 @@ const packageItemSchema = z.object({
 const formSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters."),
   description: z.string().optional(),
+  price: z.coerce.number().min(0, "Price cannot be negative."),
   is_active: z.boolean(),
   package_items: z.array(packageItemSchema).nonempty("You must add at least one class type."),
 });
@@ -38,7 +39,7 @@ const PackageForm = ({ isOpen, onClose, onSaveSuccess, pkg }: PackageFormProps) 
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { is_active: true, package_items: [] },
+    defaultValues: { is_active: true, package_items: [], price: 0 },
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -63,19 +64,27 @@ const PackageForm = ({ isOpen, onClose, onSaveSuccess, pkg }: PackageFormProps) 
         name: pkg.name,
         description: pkg.description,
         is_active: pkg.is_active,
+        price: pkg.price,
         package_items: pkg.package_items.map(({ class_type, credits }) => ({ class_type, credits })),
       });
     } else {
-      form.reset({ name: "", description: "", is_active: true, package_items: [] });
+      form.reset({ name: "", description: "", is_active: true, price: 0, package_items: [] });
     }
   }, [pkg, form]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      const packageData = {
+        name: values.name,
+        description: values.description,
+        is_active: values.is_active,
+        price: values.price,
+      };
+
       if (pkg) { // Update
         const { error: pkgError } = await supabase
           .from("packages")
-          .update({ name: values.name, description: values.description, is_active: values.is_active })
+          .update(packageData)
           .eq("id", pkg.id);
         if (pkgError) throw pkgError;
 
@@ -90,7 +99,7 @@ const PackageForm = ({ isOpen, onClose, onSaveSuccess, pkg }: PackageFormProps) 
       } else { // Create
         const { data, error: pkgError } = await supabase
           .from("packages")
-          .insert({ name: values.name, description: values.description, is_active: values.is_active })
+          .insert(packageData)
           .select()
           .single();
         if (pkgError) throw pkgError;
@@ -118,6 +127,7 @@ const PackageForm = ({ isOpen, onClose, onSaveSuccess, pkg }: PackageFormProps) 
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
             <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
+            <FormField control={form.control} name="price" render={({ field }) => (<FormItem><FormLabel>Price (€)</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>)} />
             <FormField control={form.control} name="is_active" render={({ field }) => (<FormItem className="flex items-center justify-between rounded-lg border p-3"><FormLabel>Active</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
             
             <div>

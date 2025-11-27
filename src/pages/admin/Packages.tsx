@@ -20,6 +20,7 @@ export interface Package {
   name: string;
   description: string;
   is_active: boolean;
+  price: number;
   package_items: PackageItem[];
 }
 
@@ -96,6 +97,7 @@ const Packages = () => {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Content</TableHead>
+                  <TableHead>Price</TableHead>
                   <TableHead>Active</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -106,6 +108,9 @@ const Packages = () => {
                     <TableCell className="font-medium">{pkg.name}</TableCell>
                     <TableCell>
                       {pkg.package_items.map(item => `${item.credits}x ${item.class_type}`).join(', ')}
+                    </TableCell>
+                    <TableCell>
+                      {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(pkg.price)}
                     </TableCell>
                     <TableCell>
                       {pkg.is_active ? <CheckCircle className="h-5 w-5 text-green-500" /> : <XCircle className="h-5 w-5 text-red-500" />}
