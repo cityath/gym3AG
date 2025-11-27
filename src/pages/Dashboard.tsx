@@ -93,14 +93,22 @@ const Dashboard = () => {
       setCurrentUserPackage(currentUserPackageData);
       setNextMonthUserPackage(nextMonthUserPackageData);
       if (currentUserPackageData) {
-        const usedCredits: Record<string, number> = (monthBookings || []).reduce((acc, booking) => {
-          const type = (booking.classes as any)?.type;
-          if (type) acc[type] = (acc[type] || 0) + 1;
-          return acc;
-        }, {});
         const creditsInfo: Record<string, number> = {};
+        // For each item in the user's package (e.g., "Spinning", "Yoga")
         currentUserPackageData.packages.package_items.forEach((item: any) => {
-          creditsInfo[item.class_type] = item.credits - (usedCredits[item.class_type] || 0);
+          const packageItemTypeLower = item.class_type.toLowerCase();
+          
+          // Count how many bookings this month match this package item type
+          const used = (monthBookings || []).filter(booking => {
+            const bookingType = (booking.classes as any)?.type;
+            if (!bookingType) return false;
+            const bookingTypeLower = bookingType.toLowerCase();
+            // Use a flexible matching to count used credits correctly
+            return bookingTypeLower.includes(packageItemTypeLower) || packageItemTypeLower.includes(bookingTypeLower);
+          }).length;
+
+          // Calculate remaining credits
+          creditsInfo[item.class_type] = item.credits - used;
         });
         setRemainingCredits(creditsInfo);
       } else {
