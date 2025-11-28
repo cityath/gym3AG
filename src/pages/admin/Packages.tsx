@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { showSuccess, showError } from "@/utils/toast";
 import { PlusCircle, MoreHorizontal, Pencil, Trash2, CheckCircle, XCircle } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } => "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import PackageForm from "@/components/admin/PackageForm";
 
@@ -103,7 +103,7 @@ const Packages = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
-                  <TableHead>Content</TableHead>
+                  <TableHead>Description</TableHead> {/* Changed from Content to Description */}
                   <TableHead>Price</TableHead>
                   <TableHead>Active</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -113,9 +113,7 @@ const Packages = () => {
                 {packages.map((pkg) => (
                   <TableRow key={pkg.id}>
                     <TableCell className="font-medium">{pkg.name}</TableCell>
-                    <TableCell>
-                      {pkg.package_items.map(item => `${item.credits}x ${item.class_type}`).join(', ')}
-                    </TableCell>
+                    <TableCell>{pkg.description}</TableCell> {/* Displaying description */}
                     <TableCell>
                       {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(pkg.price)}
                     </TableCell>
