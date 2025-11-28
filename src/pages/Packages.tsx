@@ -196,8 +196,14 @@ const PackagesPage = () => {
             <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {availablePackages.map(pkg => {
                 const isThisPackageAcquired = isNextMonthPackageAcquired && nextMonthUserPackage.package_id === pkg.id;
+                const cardClasses = cn(
+                  "flex flex-col",
+                  isThisPackageAcquired && "border-primary ring-2 ring-primary bg-green-50", // Acquired package styling
+                  isNextMonthPackageAcquired && !isThisPackageAcquired && "opacity-70" // Other packages when one is acquired
+                );
+
                 return (
-                  <Card key={pkg.id} className={`flex flex-col ${isThisPackageAcquired ? 'border-primary ring-2 ring-primary' : ''}`}>
+                  <Card key={pkg.id} className={cardClasses}>
                     <CardHeader>
                       <div className="flex justify-between items-start">
                         <CardTitle>{pkg.name}</CardTitle>
