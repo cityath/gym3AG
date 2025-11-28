@@ -119,7 +119,11 @@ const PackageForm = ({ isOpen, onClose, onSaveSuccess, pkg }: PackageFormProps) 
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) {
+        onClose();
+      }
+    }}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{pkg ? "Edit Package" : "Create Package"}</DialogTitle>
