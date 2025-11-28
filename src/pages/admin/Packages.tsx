@@ -75,6 +75,13 @@ const Packages = () => {
     setSelectedPackage(null);
   };
 
+  // Esta función se llama después de guardar/actualizar un paquete
+  const handleSaveSuccess = () => {
+    fetchPackages(); // Refrescar la lista
+    setIsDialogOpen(false);
+    showSuccess("Package saved successfully.");
+  };
+
   return (
     <>
       <Card>
@@ -137,7 +144,7 @@ const Packages = () => {
       <PackageForm
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
-        onSaveSuccess={fetchPackages}
+        onSaveSuccess={handleSaveSuccess}
         pkg={selectedPackage}
       />
 

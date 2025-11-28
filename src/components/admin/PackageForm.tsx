@@ -110,8 +110,9 @@ const PackageForm = ({ isOpen, onClose, onSaveSuccess, pkg }: PackageFormProps) 
 
         showSuccess("Package created successfully.");
       }
+      
+      // Llamar a la función de refresco en el componente padre
       onSaveSuccess();
-      onClose();
     } catch (error: any) {
       showError(error.message);
     }
