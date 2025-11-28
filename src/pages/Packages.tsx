@@ -141,45 +141,49 @@ const PackagesPage = () => {
             <CardHeader>
               <CardTitle>My Packages</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-gray-800 capitalize">{format(new Date(), "MMMM yyyy", { locale: enGB })}</h3>
-                {currentUserPackage ? (
-                  <div className="mt-2">
-                    <p className="text-lg font-medium">{currentUserPackage.packages.name}</p>
-                    <p className="text-sm text-gray-600 mb-3">{currentUserPackage.packages.description}</p>
-                    <h4 className="text-sm font-medium text-gray-700">Remaining Credits:</h4>
-                    <ul className="list-disc pl-5 text-sm text-gray-600">
-                      {currentUserPackage.packages.package_items.map((item: any) => (
-                        <li key={item.class_type}>
-                          <strong>{item.class_type}:</strong> {remainingCredits[item.class_type] ?? item.credits} / {item.credits}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500 mt-2">You do not have an active package for this month.</p>
-                )}
-              </div>
-              <Separator />
-              <div>
-                <h3 className="font-semibold text-gray-800 capitalize">{format(addMonths(new Date(), 1), "MMMM yyyy", { locale: enGB })}</h3>
-                {nextMonthUserPackage ? (
-                  <div className="mt-2">
-                    <p className="text-lg font-medium">{nextMonthUserPackage.packages.name}</p>
-                    <p className="text-sm text-gray-600 mb-3">{nextMonthUserPackage.packages.description}</p>
-                     <h4 className="text-sm font-medium text-gray-700">Package Includes:</h4>
-                    <ul className="list-disc pl-5 text-sm text-gray-600">
-                      {nextMonthUserPackage.packages.package_items.map((item: any) => (
-                        <li key={item.class_type}>
-                          <strong>{item.class_type}:</strong> {item.credits} credits
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500 mt-2">You have not acquired a package for next month yet.</p>
-                )}
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> {/* Added grid for side-by-side layout */}
+                {/* Current Month */}
+                <div>
+                  <h3 className="font-semibold text-gray-800 capitalize mb-2">{format(new Date(), "MMMM yyyy", { locale: enGB })}</h3>
+                  {currentUserPackage ? (
+                    <div className="text-sm text-gray-600">
+                      <p className="font-medium text-gray-700">{currentUserPackage.packages.name}</p>
+                      <p className="text-sm text-gray-600 mb-3">{currentUserPackage.packages.description}</p>
+                      <h4 className="text-sm font-medium text-gray-700">Remaining Credits:</h4>
+                      <ul className="list-disc pl-5 mt-1">
+                        {currentUserPackage.packages.package_items.map((item: any) => (
+                          <li key={item.class_type}>
+                            <strong>{item.class_type}:</strong> {remainingCredits[item.class_type] ?? item.credits} / {item.credits}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 mt-2">You do not have an active package for this month.</p>
+                  )}
+                </div>
+
+                {/* Next Month */}
+                <div>
+                  <h3 className="font-semibold text-gray-800 capitalize mb-2">{format(addMonths(new Date(), 1), "MMMM yyyy", { locale: enGB })}</h3>
+                  {nextMonthUserPackage ? (
+                    <div className="text-sm text-gray-600">
+                      <p className="font-medium text-gray-700">{nextMonthUserPackage.packages.name}</p>
+                      <p className="text-sm text-gray-600 mb-3">{nextMonthUserPackage.packages.description}</p>
+                       <h4 className="text-sm font-medium text-gray-700">Package Includes:</h4>
+                      <ul className="list-disc pl-5 mt-1">
+                        {nextMonthUserPackage.packages.package_items.map((item: any) => (
+                          <li key={item.class_type}>
+                            <strong>{item.class_type}:</strong> {item.credits} credits
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 mt-2">You have not acquired a package for next month yet.</p>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
