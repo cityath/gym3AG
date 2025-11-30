@@ -28,10 +28,13 @@ const BookingDashboard = lazy(() => import("./pages/admin/BookingDashboard"));
 const Packages = lazy(() => import("./pages/admin/Packages"));
 const PackagesPage = lazy(() => import("./pages/Packages"));
 
+import { ReloadPrompt } from "@/components/ReloadPrompt";
+
 const App = () => (
   <TooltipProvider>
     <Toaster />
     <Sonner />
+    <ReloadPrompt />
     <AuthProvider>
       <BrowserRouter>
         <Suspense fallback={<LoadingSpinner />}>
@@ -48,7 +51,7 @@ const App = () => (
               <Route path="/packages" element={<PackagesPage />} />
               <Route path="/profile" element={<Profile />} />
             </Route>
-            
+
             {/* Rutas protegidas para Admin */}
             <Route element={<AdminRoute />}>
               <Route path="/admin" element={<Admin />}>
