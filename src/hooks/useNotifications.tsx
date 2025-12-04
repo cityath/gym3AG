@@ -28,6 +28,24 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
             // Get initial permission status
             const currentPermission = notificationService.getPermissionStatus();
             setPermission(currentPermission);
+
+            // Listen for permission changes (e.g., after user grants via browser UI)
+            if (navigator.permissions && navigator.permissions.query) {
+                navigator.permissions
+                    .query({ name: 'notifications' as PermissionName })
+                    .then((permStatus) => {
+                        const handleChange = () => {
+                            const updated = notificationService.getPermissionStatus();
+                            setPermission(updated);
+                        };
+                        permStatus.addEventListener('change', handleChange);
+                        // Cleanup on unmount
+                        return () => permStatus.removeEventListener('change', handleChange);
+                    })
+                    .catch((err) => {
+                        console.warn('Permission API not available or failed:', err);
+                    });
+            }
         }
     }, []);
 
